@@ -1,5 +1,6 @@
 # dart-app
-Project to create a collaborative dart score
+Project to create a collaborative dart score.
+Run the project with the command `python app.py`.
 
 ## Create geojson
 

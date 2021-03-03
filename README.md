@@ -15,4 +15,7 @@ The mapping is saved under a dataframe, in particular we assign the value, the c
 
 From the root of the project, `python utils/dart_mapping.py` should do the trick.
 
+## Over view of the structure
+### Version 1
+![Project overview, version 1.](ressources/images/dart_project.png "Title")
 

@@ -1,152 +1,112 @@
 
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output, State
-import pandas as pd
-import dash_table
-import json
+import os
+import datetime
+import hashlib
+from flask import Flask, session, url_for, redirect, render_template, request, abort, flash
 
-from utils.plot_geojson import dart_plot
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# from database import list_users, verify, delete_user_from_db, add_user
+# from database import read_note_from_db, write_note_into_db, delete_note_from_db, match_user_id_with_note_id
+# from database import image_upload_record, list_images_for_user, match_user_id_with_image_uid, delete_image_from_db
+from werkzeug.utils import secure_filename
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+from utils.sql_utils import add_user, list_users_name, list_users, list_users_id, delete_user_from_db, verify, check_admin
+from utils.markdown_utils import Markdown, prepare_static_pages
 
-styles = {
-    'pre': {
-        'border': 'thin lightgrey solid',
-        'overflowX': 'scroll'
-    }
-}
+app = Flask(__name__)
+app.config.from_object('config')
 
+Markdown(app)
 
-fig = dart_plot()
-## registered players
-df_players = pd.read_csv("ressources/players.csv")
-df_darts = pd.read_csv('ressources/mapping_dart_geojson.csv')
+markdown_down_pages_static = prepare_static_pages("docs/markdown")
 
 
-app.layout = html.Div([
-    
-    html.Label('Name '),
-    dcc.Input(
-        id = 'new-player',
-        placeholder = 'If you are a new player, input your name',
-        type = 'text',
-        value = ''
-        ),
-    html.Button('Register name', id='submit-val', n_clicks=0),
+@app.errorhandler(401)
+def FUN_401(error):
+    return render_template("page_401.html"), 401
 
 
+@app.route("/")
+def FUN_root():
+    return render_template("index.html")
 
-    # dash_table.DataTable(
-    #     id='table',
-    # columns=[{"name": i, "id": i} for i in df.columns],
-    # data=df.to_dict('records'),
-
-    dcc.Graph(
-        id='basic-interactions',
-        figure=fig
-    ),
-    
-    html.Div(className='row', children=[
-        html.Div([
-            dcc.Markdown("""
-                *Hover Data*
-
-                Mouse over values in the graph.
-            """),
-            html.Pre(id='hover-data', style=styles['pre'])
-        ], className='three columns'),
-
-        html.Div([
-            dcc.Markdown("""
-                *Click Data*
-
-                Click on points in the graph.
-            """),
-            html.Pre(id='click-data', style=styles['pre']),
-        ], className='three columns'),
-
-        html.Div([
-            dcc.Markdown("""
-                *Selection Data*
-
-                Choose the lasso or rectangle tool in the graph's menu
-                bar and then select points in the graph.
-
-                Note that if `layout.clickmode = 'event+select'`, selection data also
-                accumulates (or un-accumulates) selected data if you hold down the shift
-                button while clicking.
-            """),
-            html.Pre(id='selected-data', style=styles['pre']),
-        ], className='three columns'),
-
-        html.Div([
-            dcc.Markdown("""
-                *Zoom and Relayout Data*
-
-                Click and drag on the graph to zoom or click on the zoom
-                buttons in the graph's menu bar.
-                Clicking on legend items will also fire
-                this event.
-            """),
-            html.Pre(id='relayout-data', style=styles['pre']),
-        ], className='three columns')
-    ])
-])
+@app.route("/rules/")
+def FUN_rule():
+    return render_template("doc_main.html", keys=markdown_down_pages_static.keys())
 
 
-# @app.callback(
-#     Output('table_players', 'children'),
-#     [Input('submit-val', 'n_clicks')],
-#     [State('new-player', 'value')])
-# def update_output(n_clicks, value):
-#     last_index = df_players.shape[0]
-#     print('ha')
-#     last_id = df_players["id_ref"].max()
-#     print('he')
-#     df_players.loc[last_index + 1, "id_ref"] = last_id + 1
-#     print('hi')
-#     df_players.loc[last_index + 1, "id_ref"] = value
-#     print('ho')
-#     return df_players
-
-@app.callback(
-    Output('hover-data', 'children'),
-    Input('basic-interactions', 'hoverData'))
-def display_hover_data(hoverData):
-    return json.dumps(hoverData, indent=2)
+@app.route("/rules/<title>")
+def FUN_template_title(title):
+    if title in markdown_down_pages_static.keys():
+        mkd_text = markdown_down_pages_static[title]
+        return render_template("doc_template.html", mkd_text=mkd_text)
+    else:
+        return abort(401)
 
 
-@app.callback(
-    Output('click-data', 'children'),
-    Input('basic-interactions', 'clickData'))
-def display_click_data(clickData):
-    coef, value = 0, 0
-    if clickData is not None:
-        click_Location = clickData['points'][0]['location']
-        touched_polygon = df_darts.loc[df_darts["id"] == click_Location].index[0]
-        value = df_darts.loc[touched_polygon, 'value']
-        coef  = df_darts.loc[touched_polygon, 'coef']
-    return value * coef
+def user_info_with_delete():
+    user_info = list_users()
+    user_info = list(zip(*user_info))
+    delete_buttons = [x + y for x,y in zip(["/delete_user/"] * len(user_info[1]), user_info[1])]
+    user_info.append(tuple(delete_buttons))
+    user_info = zip(*user_info)
+    return user_info
+
+@app.route("/add_user/")
+def FUN_admin():
+    if True: #session.get("current_user", None) == "ADMIN":
+        user_info = user_info_with_delete()
+        return render_template("add_user.html", users = user_info)
+    else:
+        return abort(401)
+
+
+@app.route("/add_user", methods = ["POST"])
+def FUN_add_user():
+    print("admin", session.get("is_admin", None))
+    if session.get("is_admin", None): # only Admin should be able to add user.
+        # before we add the user, we need to ensure this is doesn't exsit in database. We also need to ensure the id is valid.
+        if request.form.get('id') in list_users_name():
+            user_info = user_info_with_delete()
+            return(render_template("admin.html", id_to_add_is_duplicated = True, users = user_info))
+        if " " in request.form.get('id') or "'" in request.form.get('id'):
+            user_info = user_info_with_delete()
+            return(render_template("admin.html", id_to_add_is_invalid = True, users = user_table))
+        else:
+            id = max(list_users_id()) + 1
+            is_admin = 1 if request.form.get('is_admin') in ['yes', '1', 'Admin'] else 0
+            add_user(id, request.form.get('id'), request.form.get('pw'), is_admin)
+            return(redirect(url_for("FUN_admin")))
+    else:
+        return abort(401)
+
+
+@app.route("/delete_user/<name>/", methods = ['GET'])
+def FUN_delete_user(name):
+    if session.get("is_admin", None):
+        if check_admin(name): # ADMIN account can't be deleted.
+            return abort(401)
+
+        delete_user_from_db(name)
+        return(redirect(url_for("FUN_admin")))
+    else:
+        return abort(401)
+
+
+@app.route("/login", methods = ["POST"])
+def FUN_login():
+    id_submitted = request.form.get("id")
+    if (id_submitted in list_users_name()) and verify(id_submitted, request.form.get("pw")):
+        session['current_user'] = id_submitted
+        session['is_admin'] = check_admin(id_submitted)
+    return(redirect(url_for("FUN_root")))
+
+@app.route("/logout/")
+def FUN_logout():
+    session.pop("current_user", None)
+    session.pop("is_admin", None)
+    return(redirect(url_for("FUN_root")))
 
 
 
-
-@app.callback(
-    Output('selected-data', 'children'),
-    Input('basic-interactions', 'selectedData'))
-def display_selected_data(selectedData):
-    return json.dumps(selectedData, indent=2)
-
-
-@app.callback(
-    Output('relayout-data', 'children'),
-    Input('basic-interactions', 'relayoutData'))
-def display_relayout_data(relayoutData):
-    return json.dumps(relayoutData, indent=2)
-
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0")

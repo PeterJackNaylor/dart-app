@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block page_title %}Here you can find the rules{% endblock %}
+{% block body %}
+
+    {% for id in keys %}
+        <li> <a href="/rules/{{ id }}">{{ id }}</a></li>
+    {% endfor %}
+    
+    </ul>
+{% endblock %}

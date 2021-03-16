@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block page_title %}The Naylor Dart Application{% endblock %}
+{% block body %}
+    {{ super() }}
+
+        <p>All these games are being played now:</p>
+        <ul>
+        {% for pid, port, url, proc, log in live_games %}
+            <li> <a href="/game/{{port}}"> Game {{pid}} </a></li>
+        {% else %}
+            <p>No current games.</p>
+        {% endfor %}
+        </ul>
+
+        {% if is_user %}
+            <p>Without border</p>
+            <ul>
+            {% for pid, port, url, proc, log in live_games %}
+                <li> <a href="http://127.0.0.1:{{port}}{{url}}"> Game {{pid}} </a>  </li>
+                {% else %}
+                <p>No current games.</p>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    
+{% endblock %}

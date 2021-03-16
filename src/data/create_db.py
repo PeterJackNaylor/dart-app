@@ -1,6 +1,6 @@
 import sqlite3
 
-database = "users" # "players"
+database =  "players" # "users" #
 
 
 if database == "players":
@@ -10,11 +10,15 @@ if database == "players":
 
     sql_command = f"""
     CREATE TABLE {database} ( 
-    player_id INTEGER PRIMARY KEY, 
     name VARCHAR(20), 
     nickname VARCHAR(30), 
     shoot_hand CHAR(1),
-    creation_date DATE);"""
+    height FLOAT,
+    genital_size FLOAT,
+    creation_date DATE,
+    game_won INT,
+    favorite_number INT,
+    game_played INT);"""
 
 elif database == "users":
     f = "ressources/new_database/users.db"

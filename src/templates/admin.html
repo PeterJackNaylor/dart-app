@@ -30,10 +30,12 @@
               <label for="id">ID</label>
               <input type="text" class="form-control" name="id">
             </div>
+            <br>
             <div class="form-group">
                 <label for="is_admin">Admin privilege</label>
-                <input type="text" class="form-control" name="is_admin">
+                <input type="checkbox" name="is_admin">
               </div>
+            <br>
             <div class="form-group">
               <label for="pw">Password</label>
               <input type="password" class="form-control" name="pw">
@@ -60,7 +62,7 @@
                            <th> #{{ number }} </th>
                            <td> {{ id }} </td>
                            <td> {{ is_admin }} </td>
-                           <td> {{ creation_date }} </td>
+                           <td> {{ creation_date[:19] }} </td>
                            <td><a href={{act}}>Delete</a></td>
                         </tr>
                         
@@ -70,6 +72,61 @@
 
       </div>
     </div>
-    <h3>For the is_admin field, it accepts "1", "yes", and "Admin".</h3>
+    <div class="col-lg-10">
+      <h3>Manage Existing Players</h3>
 
+        <table class="table">
+        <thead>
+            <tr>
+              <th>#Name</th>
+              <th>Nickname</th>
+              <th>Shooting hand</th>
+              <th>height</th>
+              <th>genital size</th>
+              <th>Games won</th>
+              <th>Games played</th>
+              <th>Favorite number</th>
+              <th>Create date</th>
+            </tr>
+        </thead>
+        {% for name, nickname, hand, height, genital_size, creation_date, game_won, favorite_number, game_played, act in players %}
+                <tr>
+                   <th> #{{ name }} </th>
+                   <td> {{ nickname }} </td>
+                   <td> {{ hand }} </td>
+                   <td> {{'%0.2f' | format(height | float)}} </td>
+                   <td> {{'%0.2f' | format(genital_size | float)}} </td>
+                   <td> {{'%s' % game_won}} </td>
+                   <td> {{'%s' % game_played}} </td>
+                   <td> {{'%s' % favorite_number}} </td>
+                   <td> {{ creation_date[:19] }} </td>
+                   <td><a href={{act}}>Delete</a></td>
+                </tr>
+                
+        {% endfor %}
+        </table>
+</div>
+<div class="col-lg-10">
+  <h3>Manage Current games</h3>
+
+    <table class="table">
+    <thead>
+        <tr>
+          <th>Port</th>
+          <th>Type</th>
+          <th>Kill</th>
+        </tr>
+    </thead>
+    {% for port, type, kill in games %}
+            <tr>
+               <th> #{{ port }} </th>
+               <td> {{ type }} </td>
+               <td><a href={{kill}}>Delete</a></td>
+            </tr>
+            
+    {% endfor %}
+    </table>
+</div>
+</div>
+</div>
 {% endblock %}

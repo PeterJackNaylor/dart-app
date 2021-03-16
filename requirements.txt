@@ -1,0 +1,7 @@
+flask
+Flask-Ext
+Flask-Markdown
+Flask-Bootstrap
+dash
+dash_bootstrap_components
+pandas

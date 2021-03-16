@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% block page_title %}Create game{% endblock %}
+{% block body %}
+    {{ super() }}
+    
+    {# only invoked when failed adding new ID due to duplication #}
+    {% if id_to_add_is_duplicated %}
+    <div class="alert alert-dismissible alert-danger">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      <strong>Warning!</strong> The player name already exists.
+    </div>
+    {% endif %}
+    
+    {# only invoked when failed adding new ID due to invalid character #}
+    {% if id_to_add_is_invalid %}
+    <div class="alert alert-dismissible alert-danger">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      <strong>Warning!</strong> The account name is invalid.
+    </div>
+    {% endif %}
+
+    <div class = "container">
+      <div class="row">
+        <div class="col-lg-6">
+          <h3>Add user</h3>
+
+          <form class="form-inline" action="/add_player" method='post'>
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" name="name">
+            </div>
+            <div class="form-group">
+              <label for="nickname">Nickname</label>
+              <input type="text" class="form-control" name="nickname">
+            </div>
+            <div class="form-group">
+                <label for="Hand">Shooting hand</label>
+                <input type="text" class="form-control" name="hand">
+              </div>
+              <div class="form-group">
+                <label for="Height">Height</label>
+                <input type="text" class="form-control" name="height">
+              </div>
+              <div class="form-group">
+                <label for="Genital size">Genital size</label>
+                <input type="text" class="form-control" name="genital_size">
+              </div>
+            <br><br>
+            <button type="submit" class="btn">Submit</button>
+          </form>
+        </div>
+        <div class="col-lg-6">
+          <form class="form-inline" action="/start_game" method='post'>
+            <h3>Select players:</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                      <th>  </th>
+                      <th>Team</th>
+                      <th>Name</th>
+                      <th>Nickname</th>
+                      <th>Number of games won</th>
+                      <th>Number of games played</th>
+                      <th>Favorite number</th>
+                    </tr>
+                </thead>
+              {% for name, nickname, game_won, favorite_number, game_played in player_info %}
+                                <tr>
+                                  <th>  <input type="checkbox" name="tick_{{name}}"> </th>
+                                  <th>         
+                                      <div class="dropdown">
+                                        <select name="team_{{name}}">
+                                      {% for x in teams %}
+                                          <option value = "{{x}}">{{x}}</option>
+                                      {% endfor %}
+                                  </select> </div> </th>
+                                  <th> {{ name }} </th>
+                                  <td> {{ nickname }} </td>
+                                  <td> {{ game_won }} </td>
+                                  <td> {{ game_played }} </td>
+                                  <td> {{ favorite_number }} </td>
+                                </tr>
+              {% endfor %}
+              </table>
+              <br>
+              <h3>Select game:</h3>
+              <div class="dropdown">
+                  <select name="picked_game">
+                    {% for x in games %}
+                        <option value = "{{x}}">{{x}}</option>
+                    {% endfor %}
+                  </select> 
+              </div>
+              <br>
+              <button type="submit" class="btn">Start game</button>
+            </form>
+        </div>
+
+
+    </div>
+  </div>
+
+
+{% endblock %}

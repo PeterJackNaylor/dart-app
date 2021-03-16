@@ -3,13 +3,11 @@
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.united.css') }}">
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    
     <title>The dart-app</title>
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-trget="#myNavbar">
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
@@ -21,13 +19,13 @@
             <ul class="nav navbar-nav">
                 <li><a href="/rules/">Rules</a></li>
                 {% if session.get("current_user", None) != None %}
-                <li><a href="/private/">Add player</a></li>
+                <li><a href="/create_game/">Create game</a></li>
           {% endif%}
                 {% if session.get("current_user", None) != None %}
-               <li><a href="/private/">Global stats</a></li>
+               <li><a href="/statistics/">Global stats</a></li>
             {% endif%}
                 {% if session.get("is_admin", None) %}
-              <li><a href="/add_user">Add user (Admin)</a></li>
+              <li><a href="/admin/">Add user (Admin)</a></li>
             {% endif %}
             </ul>
             
@@ -66,7 +64,7 @@
     
     <div class='container'>
     <hr>
-    Developed by <a href='https://github.com/XD-DENG'>XD-DENG</a>
+    <a>Developed by The Pit and co.</a>
     <a href="http://flask.pocoo.org/"><img
        src="{{ url_for('static', filename='img/flask-powered.png') }}"
        border="0"
@@ -76,5 +74,5 @@
     </div>
     
     
-    </html>
+</html>
     

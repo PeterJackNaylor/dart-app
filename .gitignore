@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode
+
+# local dart specifics
+ressources/local_games/

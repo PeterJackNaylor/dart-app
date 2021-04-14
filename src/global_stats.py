@@ -8,7 +8,7 @@ from flask import (Blueprint,
 # local url
 page_url = "/stats/"
 # blueprint for better python file management
-global_stats_page = Blueprint("global_stats", 
+global_stats_page = Blueprint("global_stats",
                               __name__)
 
 # to add dash pages on the same server we need bootstrap
@@ -21,4 +21,4 @@ def FUN_stat():
                                dash_url=page_url,
                                min_height=400)
     else:
-        return abort(401)
+        return abort(403)

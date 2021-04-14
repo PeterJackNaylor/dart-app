@@ -1,6 +1,4 @@
 import os
-import subprocess
-import shlex
 from flask import (Blueprint,
                    session,
                    render_template,
@@ -12,7 +10,8 @@ from flask import (Blueprint,
 from .utils.sql import (player_info_for_create,
                         add_player,
                         list_players_name)
-from .utils.pickle import save_dic, open_dic
+from .utils.pickle import save_dic
+from .utils.local_games import check_or_create
 from .global_variables import gb
 
 # blueprint for better python file management
@@ -20,61 +19,68 @@ create_game_page = Blueprint("create_game_page",
                              __name__)
 
 
-@create_game_page.route("/game/<port>")
-def FUN_game_page(port):
+root_url_games = "/game_room/"
+
+
+@create_game_page.route("/game/<room_number>/<game>")
+def FUN_game_page(room_number, game):
     if session.get("current_user", None):
-        global gb
-        taken_ports = [el[1] for el in gb['live_games']]
-        url_base = "/game_room/"
-        if port not in taken_ports:
-            # we would load all meta data of the game
-            dic = open_dic(f'ressources/local_games/{port}/meta.pickle')
-            import os; print(os.getcwd())
-            py_f = "src/dart_games/bruno_table.py"
-            command = f'python {py_f} --port={port} --url_base={url_base} --param={dic["param"]}'
-            logfile = open(f'ressources/local_games/{port}/output.log', 'w', 1)
-            proc = subprocess.Popen(shlex.split(command), stdout=logfile)
-            game_info = tuple([proc.pid, port, url_base, proc, logfile])
-            gb['live_games'].append(game_info)
+        dash_url = f"{root_url_games}{game}/{room_number}/"
         return render_template("dash_page.html",
-                               dash_url=f"http://127.0.0.1:{port}{url_base}",
+                               dash_url=dash_url,
                                min_height=800)
     else:
-        return abort(401)
+        return abort(403)
 
 
 @create_game_page.route("/start_game", methods=["POST"])
 def FUN_start_game():
     if session.get("current_user", None):
+        global gb
         player_info = player_info_for_create()
-        picked_players = []
+        players = []
+        teams = []
         for player_attribute in player_info:
             if request.form.get(f"tick_{player_attribute[0]}") == "on":
-                picked_players.append((player_attribute[0],
-                                       request.form.get(f"team_{player_attribute[0]}")))
-        name = picked_players[0][0] + picked_players[1][0]
+                players.append(player_attribute[0])
+                team = request.form.get(f"team_{player_attribute[0]}")
+                teams.append(team)
+        game = request.form.get('picked_game')
         # we would save all meta data of the game
-        global gb
-        port = gb['available_ports'].pop()
-        os.mkdir(f'ressources/local_games/{port}')
-        save_dic(f'ressources/local_games/{port}/meta.pickle', {'param': name})
-        return(redirect(url_for("create_game_page.FUN_game_page", port=port)))
+        if len(gb['available_rooms'][game]):
+            room_number = gb['available_rooms'][game].pop(0)
+            game_local_url = f'ressources/local_games/{game}/{room_number}/'
+            check_or_create(game_local_url)
+
+            meta_data = {"teams": teams,
+                         "picked_players": players,
+                         "picked_game": game}
+            gb["live_games"].append((room_number, game))
+            save_dic(os.path.join(game_local_url, 'meta.pickle'),
+                     meta_data)
+            return(redirect(url_for("create_game_page.FUN_game_page",
+                                    room_number=room_number,
+                                    game=game)))
+        else:
+            return abort(406)
     else:
-        return abort(401)
+        return abort(403)
 
 
 @create_game_page.route("/create_game/")
 def FUN_create_game():
     if session.get("current_user", None) is not None:
+        global gb
         player_info = player_info_for_create()
-        colors = ["Blue", "Pink", "Red", "Green", "White"]
-        games = ["Cricket", "The pit"]
+
+        colors = gb["teams"]
+        games = gb["games"]
         return render_template("create_game.html",
                                player_info=player_info,
                                teams=colors,
                                games=games)
     else:
-        return abort(401)
+        return abort(403)
 
 
 @create_game_page.route("/add_player", methods=["POST"])
@@ -98,4 +104,4 @@ def FUN_add_player():
                        request.form.get('genital_size'))
             return(redirect(url_for("create_game_page.FUN_create_game")))
     else:
-        return abort(401)
+        return abort(403)

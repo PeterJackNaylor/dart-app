@@ -10,7 +10,8 @@ player_db_file_location = "ressources/players.db"
 def player_info_with_delete():
     user_info = list_player_info()
     user_info = list(zip(*user_info))
-    delete_buttons = [x + y for x, y in zip(["/delete_player/"] * len(user_info[0]), user_info[0])]
+    delete_list = zip(["/delete_player/"] * len(user_info[0]), user_info[0])
+    delete_buttons = [x + y for x, y in delete_list]
     user_info.append(tuple(delete_buttons))
     user_info = zip(*user_info)
     return user_info
@@ -19,7 +20,8 @@ def player_info_with_delete():
 def user_info_with_delete():
     user_info = list_users()
     user_info = list(zip(*user_info))
-    delete_buttons = [x + y for x, y in zip(["/delete_user/"] * len(user_info[1]), user_info[1])]
+    delete_list = zip(["/delete_user/"] * len(user_info[1]), user_info[1])
+    delete_buttons = [x + y for x, y in delete_list]
     user_info.append(tuple(delete_buttons))
     user_info = zip(*user_info)
     return user_info
@@ -34,7 +36,7 @@ def add_player(name, nickname, shoot_hand, height, genital_size):
 
     inp = (name, nickname, hand, height, genital_size,
            now, game_won, favorite_number, game_played)
-    _c.execute(f"INSERT INTO players values(?, ?, ?, ?, ?, ?, ?, ?, ?)", inp)
+    _c.execute("INSERT INTO players values(?, ?, ?, ?, ?, ?, ?, ?, ?)", inp)
     _conn.commit()
     _conn.close()
 
@@ -74,7 +76,8 @@ def add_user(id, name, password, is_admin):
     _c = _conn.cursor()
     now = datetime.datetime.now()
     pwd_encoded = hashlib.sha256(password.encode()).hexdigest()
-    _c.execute(f"INSERT INTO users values(?, ?, ?, ?, ?)", (id, name, pwd_encoded, is_admin, now))
+    _c.execute("INSERT INTO users values(?, ?, ?, ?, ?)",
+               (id, name, pwd_encoded, is_admin, now))
     _conn.commit()
     _conn.close()
 
@@ -156,17 +159,18 @@ def main():
     # "data_players"
 
     if categ == "data_players":
-        file = "ressources/players.db"
-        db = "players"
+        # file = "ressources/players.db"
+        # db = "players"
         add_player("Peter", "PJ", "right", 1.83, 30)
         add_player("Bruno", "B-Dawg", "left", 1.80, 20)
 
     if categ == "data_users":
-        file = "ressources/new_database/users.db"
-        db = "users"
+        # file = "ressources/new_database/users.db"
+        # db = "users"
         add_user(0, "Peter", "pass", 1)
         add_user(1, "Bruno", "pass", 1)
         add_user(2, "Blue", "pass", 0)
+
 
 if __name__ == "__main__":
     main()

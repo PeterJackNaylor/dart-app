@@ -93,17 +93,17 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
               
 
 
-def create_ap(param, url_base):
+def create_ap(app, room_number):
 
-    app = dash.Dash(__name__, 
-                    external_stylesheets=external_stylesheets,
-                    url_base_pathname=url_base)
+    # app = dash.Dash(__name__, 
+    #                 external_stylesheets=external_stylesheets,
+    #                 url_base_pathname=url_base)
     df_players = pd.read_csv("ressources/players_New.csv")
 
-    app.layout = html.Div([
+    layout = html.Div([
 
         dash_table.DataTable(
-            id='List_Of_Existing_Players',
+            id=f'List_Of_Existing_Players_{room_number}',
             columns=[{
                 'name': df_players.columns[i],
                 'id': df_players.columns[i],
@@ -136,26 +136,25 @@ def create_ap(param, url_base):
 
         ### Add a player to the above table or launch the game!
         dcc.Input(
-            id = 'new-player',
+            id = f'new-player_{room_number}',
             placeholder = 'Player Name',
             type = 'text',
             value = ''
             ),
-        html.Button('Add Player', id='editing-rows-button', n_clicks=0),
-        html.Button(param, id='Start_Game', n_clicks=0)
+        html.Button('Add Player', id=f'editing-rows-button_{room_number}', n_clicks=0),
+        html.Button("start", id=f'Start_Game_{room_number}', n_clicks=0)
 
     ])
-    print("PARAMETER", param)
 
 
 
     ### Callback to add a player to the list of players. It is called upon when you double click on 'add player', checks that the players name doesn't already exists, then creates a file for that player and adds him to the genreal available player file. Output brings up to data the list of player table.
     @app.callback(
-        Output('List_Of_Existing_Players', 'data'),
-        Input('editing-rows-button', 'n_clicks'),
-        State('List_Of_Existing_Players', 'data'),
-        State('List_Of_Existing_Players', 'columns'),
-        State('new-player','value')
+        Output(f'List_Of_Existing_Players_{room_number}', 'data'),
+        Input(f'editing-rows-button_{room_number}', 'n_clicks'),
+        State(f'List_Of_Existing_Players_{room_number}', 'data'),
+        State(f'List_Of_Existing_Players_{room_number}', 'columns'),
+        State(f'new-player_{room_number}','value')
         )
 
     def add_row(n_clicks, rows, columns, New_Player_Name):
@@ -164,19 +163,19 @@ def create_ap(param, url_base):
         if n_clicks > 1 :
             n_clicks = 0 # need to double click
             
-            for i in range (0, len(rows)):
+            for i in range(0, len(rows)):
                 if New_Player_Name == rows[i]['name']:
                     Name_Exists = 1
             if Name_Exists == 0:
 
                 rows.append({'name': New_Player_Name, '# Partie': 0, '% Victoire': None, 'Touche / Tour': None})
                 pd.DataFrame(rows).to_csv("ressources/players_New.csv",index = False)  
-                Player_file = pd.DataFrame(None,columns=['Tour','Fleche','Valeur', 'Coef', 'Degats','Touche'])
-                Player_file.to_csv('ressources/Player_Info/{}.csv'.format(New_Player_Name),index = False) 
+                Player_file = pd.DataFrame(None, columns=['Tour','Fleche','Valeur', 'Coef', 'Degats','Touche'])
+                Player_file.to_csv('ressources/Player_Info/{}.csv'.format(New_Player_Name), index = False) 
         
         return rows
-    return app
-                
+    return app, layout
+
 
 import argparse
 

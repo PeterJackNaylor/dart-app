@@ -16,5 +16,3 @@ def parse_markdown(f):
     with open(f, 'r') as fp:
         content = "".join(fp.readlines())
     return title, content
-
-

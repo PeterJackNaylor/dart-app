@@ -19,3 +19,9 @@ From the root of the project, `python utils/dart_mapping.py` should do the trick
 ### Version 1
 ![Project overview, version 1.](ressources/images/dart_project.png "Title")
 
+
+
+# TO DO (pj):
+- Maybe add kill and delete button for live games
+- Add maybe a load button but for users and there a better saved versions of games
+- Add game details

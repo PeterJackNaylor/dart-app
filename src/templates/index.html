@@ -5,8 +5,8 @@
 
         <p>All these games are being played now:</p>
         <ul>
-        {% for pid, port, url, proc, log in live_games %}
-            <li> <a href="/game/{{port}}"> Game {{pid}} </a></li>
+        {% for game_room, game_type in live_games %}
+            <li> <a href="/game/{{game_room}}/{{game_type}}"> Game room {{game_room}} of {{game_type}} </a></li>
         {% else %}
             <p>No current games.</p>
         {% endfor %}
@@ -15,8 +15,8 @@
         {% if is_user %}
             <p>Without border</p>
             <ul>
-            {% for pid, port, url, proc, log in live_games %}
-                <li> <a href="http://127.0.0.1:{{port}}{{url}}"> Game {{pid}} </a>  </li>
+            {% for game_room, game_type in live_games %}
+                <li> <a href="/game_room/{{game_type}}/{{game_room}}"> Game room {{game_room}} of {{game_type}} </a>  </li>
                 {% else %}
                 <p>No current games.</p>
             {% endfor %}

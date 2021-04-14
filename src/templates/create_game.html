@@ -21,29 +21,31 @@
 
     <div class = "container">
       <div class="row">
-        <div class="col-lg-6">
+        <div class="col-lg-6" text-center>
           <h3>Add user</h3>
 
           <form class="form-inline" action="/add_player" method='post'>
             <div class="form-group">
-              <label for="name">Name</label>
-              <input type="text" class="form-control" name="name">
+              <label for="name" class="col-lg-4 control-label">Name</label>
+              <div class="col-lg-8"> <input type="text" class="form-control" name="name"></div>
             </div>
+            <br>
             <div class="form-group">
-              <label for="nickname">Nickname</label>
-              <input type="text" class="form-control" name="nickname">
+              <label for="nickname" class="col-lg-4 control-label">Nickname</label>
+              <div class="col-lg-8"> <input type="text" class="form-control" name="nickname"></div>
             </div>
+            <br>
             <div class="form-group">
-                <label for="Hand">Shooting hand</label>
-                <input type="text" class="form-control" name="hand">
+                <label for="Hand" class="col-lg-4 control-label">Shooting hand</label>
+                <div class="col-lg-8"><input type="text" class="form-control" name="hand"></div>
               </div>
               <div class="form-group">
-                <label for="Height">Height</label>
-                <input type="text" class="form-control" name="height">
+                <label for="Height" class="col-lg-4 control-label">Height</label>
+                <div class="col-lg-8"><input type="text" class="form-control" name="height"></div>
               </div>
               <div class="form-group">
-                <label for="Genital size">Genital size</label>
-                <input type="text" class="form-control" name="genital_size">
+                <label for="Genital size" class="col-lg-4 control-label">Genital size</label>
+                <div class="col-lg-8"><input type="text" class="form-control" name="genital_size"></div>
               </div>
             <br><br>
             <button type="submit" class="btn">Submit</button>
@@ -65,13 +67,18 @@
                     </tr>
                 </thead>
               {% for name, nickname, game_won, favorite_number, game_played in player_info %}
+                                {% set outer_loop = loop %}
                                 <tr>
                                   <th>  <input type="checkbox" name="tick_{{name}}"> </th>
                                   <th>         
                                       <div class="dropdown">
                                         <select name="team_{{name}}">
                                       {% for x in teams %}
+                                        {% if loop.index == outer_loop.index %}
+                                          <option value = "{{x}}" selected="selected">{{x}}</option>
+                                        {% else %}
                                           <option value = "{{x}}">{{x}}</option>
+                                        {% endif %}
                                       {% endfor %}
                                   </select> </div> </th>
                                   <th> {{ name }} </th>

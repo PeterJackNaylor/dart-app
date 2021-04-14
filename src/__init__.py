@@ -3,8 +3,8 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flaskext.markdown import Markdown
-
 # for the flask page
+
 
 
 def create_app():

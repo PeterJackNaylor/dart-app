@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 
 from ..utils.pickle import open_dic
 
-GAME_NAME = "template"
+GAME_NAME = "Template"
 
 
 def gen_name_teams(players, teams):

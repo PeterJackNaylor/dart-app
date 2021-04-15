@@ -20,13 +20,13 @@
                 <li><a href="/rules/">Rules</a></li>
                 {% if session.get("current_user", None) != None %}
                 <li><a href="/create_game/">Create game</a></li>
-          {% endif%}
+                {% endif%}
                 {% if session.get("current_user", None) != None %}
                <li><a href="/statistics/">Global stats</a></li>
-            {% endif%}
+                {% endif%}
                 {% if session.get("is_admin", None) %}
               <li><a href="/admin/">Admin page</a></li>
-            {% endif %}
+                {% endif %}
             </ul>
             
             <ul class="nav navbar-nav navbar-right">
@@ -54,7 +54,14 @@
     
     
     <div class="container">
-      
+      <p>{% with flashed = get_flashed_messages(with_categories=true) %}
+        {% if flashed %}
+          {% for category, message in flashed %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}</p>
+
       <h1>{% block page_title %}{% endblock %}</h1>
       
       <p>{% block body %}{% endblock %}</p>

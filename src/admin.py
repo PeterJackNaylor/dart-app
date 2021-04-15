@@ -6,7 +6,8 @@ from flask import (Blueprint,
                    abort,
                    request,
                    redirect,
-                   url_for)
+                   url_for,
+                   flash)
 from .utils.sql import (add_user,
                         user_info_with_delete,
                         player_info_with_delete,
@@ -55,6 +56,7 @@ def FUN_add_user():
             games_saved = saved_games()
             games_live = live_games(live_games=gb['live_games'])
 
+            flash('User account already exists', 'danger')
             return(render_template("admin.html",
                                    id_to_add_is_duplicated=True,
                                    users=user_info,
@@ -66,6 +68,7 @@ def FUN_add_user():
             player_info = player_info_with_delete()
             games_saved = saved_games()
             games_live = live_games(live_games=gb['live_games'])
+            flash('User account should not be spaces', 'danger')
             return(render_template("admin.html",
                                    id_to_add_is_invalid=True,
                                    users=user_info,
@@ -79,6 +82,7 @@ def FUN_add_user():
                      request.form.get('id'),
                      request.form.get('pw'),
                      is_admin)
+            flash('User account created', 'info')
             return(redirect(url_for("admin_page.FUN_admin")))
     else:
         return abort(403)
@@ -88,6 +92,7 @@ def FUN_add_user():
 def FUN_delete_player(name):
     if session.get("is_admin", None):
         delete_player_from_db(name)
+        flash('Player successfully deleted.', 'info')
         return(redirect(url_for("admin_page.FUN_admin")))
     else:
         return abort(403)
@@ -99,6 +104,7 @@ def FUN_delete_folder(room_game):
         room, game = room_game.split('_')
         if os.path.exists(f"./ressources/local_games/{game}/{room}"):
             delete_local_folder(game, room)
+            flash('Saved game successfully deleted.', 'info')
             return(redirect(url_for("admin_page.FUN_admin")))
         else:
             return abort(403)
@@ -112,6 +118,7 @@ def FUN_load_folder(room_game):
         room, game = room_game.split('_')
         global gb
         gb["live_games"].append((room, game))
+        flash('Game loaded.', 'info')
         return(redirect(f"/game/{room}/{game}"))
     else:
         return abort(403)
@@ -124,6 +131,7 @@ def FUN_live_game(room_game):
         global gb
         gb['available_rooms'][game].append(room)
         gb['live_games'].remove((room, game))
+        flash('Live game deleted.', 'info')
         return(redirect(url_for("admin_page.FUN_admin")))
     else:
         return abort(403)
@@ -133,10 +141,11 @@ def FUN_live_game(room_game):
 def FUN_delete_user(name):
     if session.get("is_admin", None):
         if check_admin(name):
+            flash('Can not delete admin account.', 'danger')
             # ADMIN account can't be deleted.
-            return abort(403)
-
-        delete_user_from_db(name)
+        else:
+            delete_user_from_db(name)
+            flash('User deleted.', 'info')
         return(redirect(url_for("admin_page.FUN_admin")))
     else:
         return abort(403)

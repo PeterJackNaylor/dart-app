@@ -137,8 +137,13 @@ def verify(name, pw):
     _c = _conn.cursor()
 
     _c.execute("SELECT password FROM users WHERE name = '" + name + "';")
-    result = _c.fetchone()[0] == hashlib.sha256(pw.encode()).hexdigest()
-    _conn.close()
+    fetch = _c.fetchone()
+    result = False
+
+    if fetch:
+        # if no username matches, there are no possible passwords...
+        result = fetch[0] == hashlib.sha256(pw.encode()).hexdigest()
+        _conn.close()
 
     return result
 

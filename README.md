@@ -26,3 +26,4 @@ From the root of the project, `python utils/dart_mapping.py` should do the trick
 - Add maybe a load button but for users and there a better saved versions of games
 - Add game details
 - What to do with the bruno geo_plot file
+- error page on bad login authentification

@@ -3,11 +3,12 @@ from flask import (Blueprint,
                    render_template,
                    request,
                    redirect,
-                   url_for)
-
+                   url_for,
+                   flash)
 from .utils.sql import (list_users_name,
                         verify,
                         check_admin)
+
 from .global_variables import gb
 # blueprint for better python file management
 home_page = Blueprint("home_page",
@@ -26,10 +27,14 @@ def FUN_root():
 @home_page.route("/login", methods=["POST"])
 def FUN_login():
     id_submitted = request.form.get("id")
-    check_id = verify(id_submitted, request.form.get("pw"))
+    pw = request.form.get("pw")
+    check_id = verify(id_submitted, pw)
     if (id_submitted in list_users_name()) and check_id:
         session['current_user'] = id_submitted
         session['is_admin'] = check_admin(id_submitted)
+        flash('You were successfully logged in', 'info')
+    else:
+        flash("Password or username incorrect", 'danger')
     return(redirect(url_for("home_page.FUN_root")))
 
 

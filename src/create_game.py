@@ -5,7 +5,8 @@ from flask import (Blueprint,
                    abort,
                    request,
                    redirect,
-                   url_for)
+                   url_for,
+                   flash)
 
 from .utils.sql import (player_info_for_create,
                         add_player,
@@ -58,6 +59,7 @@ def FUN_start_game():
             gb["live_games"].append((room_number, game))
             save_dic(os.path.join(game_local_url, 'meta.pickle'),
                      meta_data)
+            flash('Game successfully created', 'info')
             return(redirect(url_for("create_game_page.FUN_game_page",
                                     room_number=room_number,
                                     game=game)))
@@ -90,10 +92,12 @@ def FUN_add_player():
         # before we add the user, we need to ensure this is doesn't exist
         # in database. We also need to ensure the id is valid.
         if request.form.get('name') in list_players_name():
+            flash('Player not created, name incorrect.', 'info')
             return(render_template("create_game.html",
                                    id_to_add_is_duplicated=True))
         if " " in request.form.get('name') or "'" in request.form.get('name'):
             # player_info
+            flash('Player not created, name incorrect.', 'info')
             return(render_template("create_game.html",
                                    id_to_add_is_invalid=True))
         else:
@@ -102,6 +106,7 @@ def FUN_add_player():
                        request.form.get('hand'),
                        request.form.get('height'),
                        request.form.get('genital_size'))
+            flash('Player successfully created', 'info')
             return(redirect(url_for("create_game_page.FUN_create_game")))
     else:
         return abort(403)

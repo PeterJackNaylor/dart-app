@@ -20,6 +20,9 @@ From the root of the project, `python utils/dart_mapping.py` should do the trick
 ![Project overview, version 1.](ressources/images/dart_project.png "Title")
 
 
+## DNS server
+
+Free on website (freenom)[https://www.freenom.com/en/index.html?lang=en].
 
 # TO DO (pj):
 - Maybe add kill and delete button for live games

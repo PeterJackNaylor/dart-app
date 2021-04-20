@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
+from flask import session
 
 from ..global_variables import gb
 
@@ -20,6 +21,8 @@ def generate_games(app):
             from ..dart_games.bruno_table import create_ap
         elif game == "Template":
             from ..dart_games.app_template import create_ap
+        elif game == "Bruno":
+            from ..dart_games.app_dashboard_Game_PJ import create_ap
 
         for i in range(gb["MAX_ROOMS"]):
             app, layout = create_ap(app, i)
@@ -57,13 +60,16 @@ def add_dash_games(server, url_base):
     @app.callback(Output('page-content', 'children'),
                   Input('url', 'pathname'))
     def display_page(pathname):
-        global gb
-        game_name = pathname.split('/')[2]
-        room_number = pathname.split('/')[3]
-        if (room_number, game_name) in gb['live_games']:
-            layout = load_game(f"{room_number}", game_name)
-            return layout
+        if session.get("current_user", None):
+            global gb
+            game_name = pathname.split('/')[2]
+            room_number = pathname.split('/')[3]
+            if (room_number, game_name) in gb['live_games']:
+                layout = load_game(f"{room_number}", game_name)
+                return layout
+            else:
+                return "401"
         else:
-            return "401"
+            return "Forbidden"
 
     return server

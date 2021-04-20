@@ -3,56 +3,53 @@
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.united.css') }}">
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
     <title>The dart-app</title>
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-trget="#myNavbar">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="/">The dart-app</a>
             </div>
-    
             <div class="collapse navbar-collapse" id="myNavbar">
-            <ul class="nav navbar-nav">
-                <li><a href="/rules/">Rules</a></li>
-                {% if session.get("current_user", None) != None %}
-                <li><a href="/create_game/">Create game</a></li>
-                {% endif%}
-                {% if session.get("current_user", None) != None %}
-               <li><a href="/statistics/">Global stats</a></li>
-                {% endif%}
-                {% if session.get("is_admin", None) %}
-              <li><a href="/admin/">Admin page</a></li>
-                {% endif %}
-            </ul>
-            
-            <ul class="nav navbar-nav navbar-right">
-            {% if session.get("current_user", None) == None %}
-                    <form action="/login" method="post" class="navbar-form navbar-right">
-                        <div class="form-group">
-                          <input type="text" name="id" placeholder="User Name" class="form-control">
-                        </div>
-                        <div class="form-group">
-                          <input type="password" name="pw" placeholder="Password" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-success">Log In</button>
-                    </form>
-            {% else %}
-            <li>
-                  <a><b>{{ session.get("current_user") }}</b></a></li>
-                  <li><a href="/logout"><b><u>Logout</u></b></a>
-              </li>
-            {% endif %}
-            </ul>
-            </div>
-                            
+              <ul class="nav navbar-nav">
+                  <li><a href="/rules/">Rules</a></li>
+                  {% if session.get("current_user", None) != None %}
+                  <li><a href="/create_game/">Create game</a></li>
+                  {% endif%}
+                  {% if session.get("current_user", None) != None %}
+                  <li><a href="/statistics/">Global stats</a></li>
+                  {% endif%}
+                  {% if session.get("is_admin", None) %}
+                  <li><a href="/admin/">Admin page</a></li>
+                  {% endif %}
+              </ul>
+              
+              <ul class="nav navbar-nav navbar-right">
+              {% if session.get("current_user", None) == None %}
+                      <form action="/login" method="post" class="navbar-form navbar-right">
+                          <div class="form-group">
+                            <input type="text" name="id" placeholder="User Name" class="form-control">
+                          </div>
+                          <div class="form-group">
+                            <input type="password" name="pw" placeholder="Password" class="form-control">
+                          </div>
+                          <button type="submit" class="btn btn-success">Log In</button>
+                      </form>
+              {% else %}
+                <li><a><b>{{ session.get("current_user") }}</b></a></li>
+                <li><a href="/logout"><b><u>Logout</u></b></a></li>
+              {% endif %}
+              </ul>
+            </div>                 
         </div>
-        </nav>
-    
-    
+    </nav>
+
     <div class="container">
       <p>{% with flashed = get_flashed_messages(with_categories=true) %}
         {% if flashed %}

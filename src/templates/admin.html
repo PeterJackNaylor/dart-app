@@ -28,7 +28,7 @@
           <form class="form-inline" action="/add_user" method='post'>
             <div class="form-group">
               <label for="id" class="col-lg-4 control-label">ID</label>
-              <div class="col-lg-5"><input type="text" class="form-control" name="id"></div>
+              <div class="col-lg-5"><input type="text" class="form-control-1" name="id"></div>
             </div>
             <br>
             <div class="form-group">
@@ -38,7 +38,7 @@
             <br>
             <div class="form-group">
               <label for="pw" class="col-lg-4 control-label">Password</label>
-              <div class="col-lg-5"><input type="password" class="form-control" name="pw"></div>
+              <div class="col-lg-5"><input type="password" class="form-contro-1" name="pw"></div>
             </div>
             <br><br>
             <button type="submit" class="btn">Submit</button>
@@ -107,7 +107,7 @@
         </table>
 </div>
 <div class="col-lg-12">
-  <h3>Manage saved game(s)</h3>
+  <h3>Manage temp game(s)</h3>
 
     <table class="table">
     <thead>
@@ -118,7 +118,7 @@
           <th>Load</th>
         </tr>
     </thead>
-    {% for room, game, kill, load in saved_games %}
+    {% for room, game, kill, load in temp_games %}
             <tr>
                <th> #{{ game }} </th>
                <th> {{ room }} </th>
@@ -138,13 +138,39 @@
           <th>Game</th>
           <th>Room</th>
           <th>Kill</th>
+          <th>Save
         </tr>
     </thead>
-    {% for room, game, kill in live_games %}
+    {% for room, game, kill, save in live_games %}
             <tr>
+               <div class = "form-group">
                <th> #{{ game }} </th>
                <th> {{ room }} </th>
                <td><a href={{kill}}>Delete</a></td>
+               <td>
+                <form method='post' action ="{{ url_for('admin_page.FUN_save_live_game', room_game=room + '_' + game) }}"> <input type="text" class="form-control-1" name="input_{{ room }}_{{ game }}"><input class="btn btn-primary" type="submit" value="save"></form> </td>
+            </tr>
+      
+            
+    {% endfor %}
+    </table>
+</div>
+<div class="col-lg-12">
+  <h3>Manage saved game(s)</h3>
+
+    <table class="table">
+    <thead>
+        <tr>
+          <th>Game</th>
+          <th>Kill</th>
+          <th>Load</th>
+        </tr>
+    </thead>
+    {% for game, kill, load in saved_games %}
+            <tr>
+               <th> #{{ game }} </th>
+               <td><a href={{kill}}>Delete</a></td>
+               <td><a href={{load}}>Load</a></td>
             </tr>
             
     {% endfor %}

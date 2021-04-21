@@ -1,39 +1,43 @@
+import os
+import numpy as np
 
-import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
+import dash_table
+
 import pandas as pd
 import plotly.express as px
 
-import dash_table
-import json
+from ..utils.pickle import open_dic
+from ..utils.plot_geojson import dart_plot
 
-import random
-import plotly
-import numpy as np
-import plotly.graph_objs as go 
-from collections import deque 
-
-
-
-from .app_dashboard_functions import discrete_background_color_bins, Which_Line, Open_Or_Closed, Tables_Up_to_Date, Cancel_Button, Submit_Turn, Remove_Last_Round_New, Get_Click_Data, Score_Update_Cricket, Score_Update_Douze, Douze_Turn, Storage_Player_Separation, Update_Live_Stats,Update_Live_Graph, Update_Live_Player
-
+from .app_dashboard_functions import (discrete_background_color_bins,
+                                      Which_Line,
+                                      Open_Or_Closed,
+                                      # Tables_Up_to_Date,
+                                      Cancel_Button,
+                                      Submit_Turn,
+                                      Remove_Last_Round_New,
+                                      Get_Click_Data,
+                                      Score_Update_Cricket,
+                                      Score_Update_Douze,
+                                      Douze_Turn,
+                                      Storage_Player_Separation,
+                                      Update_Live_Stats,
+                                      Update_Live_Graph,
+                                      Update_Live_Player)
 
 
 # mise a jour du tableau df_players
 
 # the end of game criteria takes the data of the next player.
 
-
-
-
-
-from ..utils.plot_geojson import dart_plot
-
 GAME_NAME = "Bruno"
 
+
 def create_ap(app, room_number):
+    local_path = f"ressources/local_games/{GAME_NAME}/{room_number}"
 
     styles = {
         'pre': {
@@ -42,9 +46,6 @@ def create_ap(app, room_number):
         }
     }
 
-    tabs_styles = {
-        'height': '44px'
-    }
     tab_style = {
         'borderBottom': '1px solid #d6d6d6',
         'padding': '6px',
@@ -63,59 +64,98 @@ def create_ap(app, room_number):
 
     fig = dart_plot()
 
-    #Player_List= [0,1]
+    if os.path.isdir(local_path):
+        print("loading local files")
+        dic = open_dic(os.path.join(local_path, "meta.pickle"))
+        print(dic)
+    else:
+        print("taking default dic")
+        dic = {"teams": ["Blue", "Red"],
+               "picked_players": ["Peter", "Bruno"],
+               "picked_game": "Just a template"}
 
-    Team_List_Old =['Equipe A', 'Equipe B']
-    Team_List = {'Equipe A': ['Ant','Bruno'], 'Equipe B':['Mart','Remy']}
+    Team_List = {}
+    for i, t in enumerate(dic["teams"]):
+        player = dic["picked_players"][i]
+        if t in Team_List.keys():
+            Team_List[t].append(player)
+        else:
+            Team_List[t] = [player]
 
-    Player_Number = len( Team_List[ list(Team_List.keys())[0] ] )
-    Team_Number = len( list(Team_List.keys()) )
+    n_t = len(Team_List)
 
-    Cricket = ['20', '19', '18','17','16','15','Bull', 'Score']
-    Douze = ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score']
-    Cricket_Type = 'Cut_Throat' # other mode is 'Cut_Throat'
+    Cricket = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
+    Douze = ['12', '13', '14', 'Double', '15', '16', '17', 'Triple',
+             '18', '19', '20', 'Bull', 'Score']
+    Cricket_Type = 'Cut_Throat'  # other mode is 'Cut_Throat'
 
-    #Game = Douze
+    # Game = Douze
     Game = Cricket
 
+    # Score_Init = [0 for _ in Game]
 
-    Score_Init = [0 for i in range (0,len(Game))]
+    Score_Live = [[t] + [None]*6 for t in Team_List]
 
-    Score_Live = [[ list(Team_List.keys())[i],None,None,None,None,None,None] for i in range (0,Team_Number)]
-    #Score_Live = [None,None,None,None,None,None]
     Turn_Counter = 0
     Flechette_Compteur = 0
-    Darts_Total = 3 # Maybe some games use a different number of darts....
-
+    Darts_Total = 3  # Maybe some games use a different number of darts....
 
     df_darts = pd.read_csv('ressources/mapping_dart_geojson.csv')
-    df_Score = pd.DataFrame(np.array([Score_Init for i in range(0, Team_Number)]),columns= Game, index= list(Team_List.keys()))
 
+    df_Score = pd.DataFrame(np.zeros((n_t, len(Game)), dtype=int),
+                            columns=Game, index=list(Team_List.keys()))
 
-    df_Score_Live_New_Way = pd.DataFrame(np.array([Score_Live[i] for i in range (0, Team_Number)]), columns=['Equipe','Fleche 1','Coef 1', 'Fleche 2','Coef 2', 'Fleche 3','Coef 3'], index=[Team_List[list(Team_List.keys())[i]][0] for i in range (0,Team_Number)])
-    df_Score_Live_New_Way = df_Score_Live_New_Way.reset_index()
-    print(df_Score_Live_New_Way)
+    darts_3_column = ['Equipe'] + \
+                     [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
+    index_3 = [Team_List[list(Team_List.keys())[i]][0] for i in range(n_t)]
 
-    Column_Live_Stats = [ '# Touche/ Tour','# de triple', '# de double','# de tour à vide', 'Longest streak', 'Tour']
-    df_Stat_Live = pd.DataFrame(np.array([[0 for j in range (0, len(Column_Live_Stats))] for i in range (0, Team_Number)]), columns=Column_Live_Stats, index= list(Team_List.keys()))
-    df_Stat_Live = df_Stat_Live.reset_index()
+    df_Score_Live_New_Way = pd.DataFrame(np.array(Score_Live),
+                                         columns=darts_3_column)
+    df_Score_Live_New_Way["index"] = index_3
 
+    Column_Live_Stats = ['# Touche/ Tour',
+                         '# de triple',
+                         '# de double',
+                         '# de tour à vide',
+                         'Longest streak',
+                         'Tour']
 
-    Column_Storage = ['Player','Tour', 'Flèche numéro','Valeur', 'Coef', 'Dégats', 'Ferme le chiffre']
-    df_Score_Storage = pd.DataFrame( columns=Column_Storage)
+    stat_init = np.zeros((n_t, len(Column_Live_Stats)), dtype=int)
+    df_Stat_Live = pd.DataFrame(stat_init,
+                                columns=Column_Live_Stats)
+    df_Stat_Live["index"] = list(Team_List.keys())
 
+    Column_Storage = ['Player',
+                      'Tour',
+                      'Flèche numéro',
+                      'Valeur',
+                      'Coef',
+                      'Dégats',
+                      'Ferme le chiffre']
+    df_Score_Storage = pd.DataFrame(columns=Column_Storage)
 
+    Column_Live_Stats_Graph = ['# Touche/ Tour',
+                               '# de triple',
+                               '# de double',
+                               '# de tour à vide',
+                               'Longest streak',
+                               'Tour',
+                               'Player']
 
+    init_graph_live = np.zeros((n_t, len(Column_Live_Stats_Graph)), dtype=int)
 
-    Column_Live_Stats_Graph = [ '# Touche/ Tour','# de triple', '# de double','# de tour à vide', 'Longest streak', 'Tour', 'Player']
-    df_Graph_Live = pd.DataFrame(np.array([[0 for j in range (0, len(Column_Live_Stats_Graph))] for i in range (0, Team_Number)]), columns=Column_Live_Stats_Graph, index=list(Team_List.keys()))
-    df_Graph_Live = df_Graph_Live.reset_index()
+    df_Graph_Live = pd.DataFrame(init_graph_live,
+                                 columns=Column_Live_Stats_Graph)
+    df_Graph_Live["index"] = list(Team_List.keys())
 
-    fig_Stat = px.scatter(df_Graph_Live, x="Tour", y="# Touche/ Tour", color= [list(Team_List.keys())[i] for i in range (0,Team_Number)],hover_data=[]) #,size='petal_length', hover_data=['Dernier_Tour'])
+    fig_Stat = px.scatter(df_Graph_Live,
+                          x="Tour",
+                          y="# Touche/ Tour",
+                          color=list(Team_List.keys()),
+                          hover_data=[]) #,size='petal_length', hover_data=['Dernier_Tour'])
+    Y_Live_Stats = [[0] * len(Column_Live_Stats_Graph)]
 
-    Y_Live_Stats = [[ 0 for i in range (0,len(Column_Live_Stats_Graph) ) ]] 
-
-    for i in range (0, Team_Number):
+    for i in range(0, n_t):
         fig_Stat.data[i].update(mode='markers+lines')
 
 
@@ -135,73 +175,62 @@ def create_ap(app, room_number):
 
     #fig_Stat.update_traces(marker_size=20)
 
-
-
     (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-1])
 
-
-    layout = html.Div([
-        
-        
-        dcc.Tabs( children = [
-            dcc.Tab(label= 'Game', style = tab_style, selected_style= tab_selected_style, children = [    
-        #### Some storing variable, doesn't do much yet but could be a way to not lose data once we refresh
-
-                dcc.Store(id='Turn_Counter',data = Turn_Counter, storage_type = 'session'),    
-                dcc.Store(id='Dart_Counter',data = Flechette_Compteur),#, storage_type = 'session'),
-                dcc.Store(id='Score_Storage',data = Score_Storage),#, storage_type = 'session'),
-            # dcc.Store(id='Stat_Graph',data = df_Graph_Live),
-                dcc.Store(id='Y_Live-Stat',data = Y_Live_Stats),    
-
-                dcc.Store(id='Game_Players',data = Team_List),# storage_type = 'session'),
-                dcc.Store(id='Team_Number',data = Team_Number),#, storage_type = 'session'),    
-                
-
-
-        
-        
-
-                html.Div([
-                
-                
-
-                ### Maybe useless, a display to indicate how many turns have been played
-
-                html.H1(id= 'Joueur' ,children=['Tour numéro: {}'.format(Turn_Counter) ] ),
-                        
-    #            html.H1(children= ' "{}"'.format(df_Score_Live_New_Way['index'][Turn_Counter]),id= 'Joueur1' ),
-
-                ]), 
-
-                ### Buttons to submit the darts inputs, cancel the input, or go back to the previous player
-
-                html.Button('Valider ce tour', id='submit_round', n_clicks=0),
-                html.Button('Annuler ce tour', id='cancel_round', n_clicks=0),
-                html.Button('Revenir au joueur precedent ', id='precedent_round', n_clicks=0),
-
-            
-
-                html.Div([
-                    
-                    html.Div([
-                        # Table that shows what each player did on his/her last round. 
-                        dash_table.DataTable(
-                            id='Score_Live_New_Way',
-                            columns=[{'name': ['Joueur', ''], 'id': 'index'},{'name': ['Equipe', ''], 'id': 'Equipe'},
+    first_dash_table =[{'name': ['Joueur', ''], 'id': 'index'},{'name': ['Equipe', ''], 'id': 'Equipe'},
             {'name': ['Fleche 1', 'Value'], 'id': 'Fleche 1'},
             {'name': ['Fleche 1', 'Coef'], 'id': 'Coef 1'},
             {'name': ['Fleche 2', 'Value'], 'id': 'Fleche 2'},
             {'name': ['Fleche 2', 'Coef'], 'id': 'Coef 2'},
             {'name': ['Fleche 3', 'Value'], 'id': 'Fleche 3'},
-            {'name': ['Fleche 3', 'Coef'], 'id': 'Coef 3'}],
-                            
-                            #columns=[{'name': ['index', ''], 'id': 'index'},
-            #{'name': ['Fleche 1', 'Value'], 'id': 'Fleche 1'},
-            #{'name': ['Fleche 1', 'Coef'], 'id': 'Coef 1'},
-            #{'name': ['Fleche 2', 'Value'], 'id': 'Fleche 2'},
-            #{'name': ['Fleche 2', 'Coef'], 'id': 'Coef 2'},
-            #{'name': ['Fleche 3', 'Value'], 'id': 'Fleche 3'},
-            #{'name': ['Fleche 3', 'Coef'], 'id': 'Coef 3'}],
+            {'name': ['Fleche 3', 'Coef'], 'id': 'Coef 3'}]
+
+    layout = html.Div([
+        
+        dcc.Tabs(children = [
+                dcc.Tab(label='Game',
+                        style=tab_style,
+                        selected_style=tab_selected_style, 
+                        children = [    
+                            # Some storing variable, doesn't do much 
+                            # yet but could be a way to not 
+                            # lose data once we refresh
+                            dcc.Store(id='Turn_Counter',
+                                      data=Turn_Counter,
+                                      storage_type='session'),
+                            dcc.Store(id='Dart_Counter',
+                                      data=Flechette_Compteur),#, storage_type = 'session'),
+                            dcc.Store(id='Score_Storage',
+                                      data=Score_Storage),#, storage_type = 'session'),
+                        # dcc.Store(id='Stat_Graph',data = df_Graph_Live),
+                            dcc.Store(id='Y_Live-Stat',
+                                      data=Y_Live_Stats),    
+                            dcc.Store(id='Game_Players',
+                                      data=Team_List),# storage_type = 'session'),
+                            dcc.Store(id='Team_Number',
+                                      data=n_t),#, storage_type = 'session'),    
+                            html.Div([
+                                ### Maybe useless, a display to indicate how many turns have been played
+                                html.H1(id='Joueur',
+                                        children=['Tour numéro: {}'.format(Turn_Counter)]),
+                                # html.H1(children= ' "{}"'.format(df_Score_Live_New_Way['index'][Turn_Counter]),id= 'Joueur1' ),
+                            ]), 
+                            ### Buttons to submit the darts inputs, cancel the input, or go back to the previous player
+                            html.Button('Valider ce tour',
+                                        id='submit_round',
+                                        n_clicks=0),
+                            html.Button('Annuler ce tour',
+                                        id='cancel_round',
+                                        n_clicks=0),
+                            html.Button('Revenir au joueur precedent ',
+                                        id='precedent_round', 
+                                        n_clicks=0),
+                            html.Div([
+                                html.Div([
+                                    # Table that shows what each player did on his/her last round. 
+                                    dash_table.DataTable(
+                                                id='Score_Live_New_Way',
+                                                columns=first_dash_table,
                     
                             data = df_Score_Live_New_Way.to_dict('records'),
                             style_cell={'textAlign': 'center'},
@@ -411,7 +440,10 @@ def create_ap(app, room_number):
 
         if Game == Cricket:
         
-            Number_Open_Close = Open_Or_Closed(Game,Team_Number_Game,data_Table,Turn_Counter_Index)
+            Number_Open_Close = Open_Or_Closed(Game,
+                                               Team_Number_Game,
+                                               data_Table,
+                                               Turn_Counter_Index)
         
         elif Game == Douze:
 

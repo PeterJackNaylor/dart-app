@@ -24,6 +24,8 @@ From the root of the project, `python utils/dart_mapping.py` should do the trick
 
 Free on website (freenom)[https://www.freenom.com/en/index.html?lang=en].
 
+Picked: dartapp-denfert.tk
+
 # TO DO (pj):
 - Maybe add kill and delete button for live games
 - Add maybe a load button but for users and there a better saved versions of games

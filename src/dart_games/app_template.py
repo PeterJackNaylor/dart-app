@@ -19,7 +19,7 @@ def gen_name_teams(players, teams):
 
 def create_ap(app, room_number):
     local_path = f"ressources/local_games/{GAME_NAME}/{room_number}"
-    if os.path.isfile(local_path):
+    if os.path.isdir(local_path):
         dic = open_dic(os.path.join(local_path, "meta.pickle"))
     else:
         dic = {"teams": ["Blue", "Red"],

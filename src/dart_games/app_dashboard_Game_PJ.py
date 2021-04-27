@@ -1,6 +1,9 @@
 import os
 import numpy as np
 
+from numpy import savetxt
+from numpy import loadtxt
+
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -64,15 +67,50 @@ def create_ap(app, room_number):
 
     fig = dart_plot()
 
+  
+
     if os.path.isdir(local_path):
         print("loading local files")
         dic = open_dic(os.path.join(local_path, "meta.pickle"))
         print(dic)
+
+
+
+            
+
+    #    if len(os.listdir(local_path)) == 1 : # This means we have just created the folder, we therefore need to initialize everybody
+    #        Turn_Counter = 0
+    #        Flechette_Compteur = 0
+    #        f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
+    #        f1.write(str(Turn_Counter))
+    #        f1.close()
+
+    #        f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "x")
+    #        f2.write(str(Flechette_Compteur))
+    #        f2.close()
+
+
+
+
+
+
+#        else : # This means the game has already started and we need to load existing files.
     else:
         print("taking default dic")
         dic = {"teams": ["Blue", "Red"],
                "picked_players": ["Peter", "Bruno"],
                "picked_game": "Just a template"}
+
+        Turn_Counter = 0
+        Flechette_Compteur = 0
+
+        # f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
+        # f1.write(str(Turn_Counter))
+        # f1.close()
+
+        # f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "x")
+        # f2.write(str(Flechette_Compteur))
+        # f2.close()
 
     Team_List = {}
     for i, t in enumerate(dic["teams"]):
@@ -92,12 +130,11 @@ def create_ap(app, room_number):
     # Game = Douze
     Game = Cricket
 
-    # Score_Init = [0 for _ in Game]
 
     Score_Live = [[t] + [None]*6 for t in Team_List]
 
-    Turn_Counter = 0
-    Flechette_Compteur = 0
+#    Turn_Counter = 0
+#    Flechette_Compteur = 0
     Darts_Total = 3  # Maybe some games use a different number of darts....
 
     df_darts = pd.read_csv('ressources/mapping_dart_geojson.csv')
@@ -196,8 +233,8 @@ def create_ap(app, room_number):
                             # yet but could be a way to not 
                             # lose data once we refresh
                             dcc.Store(id='Turn_Counter',
-                                      data=Turn_Counter,
-                                      storage_type='session'),
+                                      data=Turn_Counter),
+#                                      storage_type='session'),
                             dcc.Store(id='Dart_Counter',
                                       data=Flechette_Compteur),#, storage_type = 'session'),
                             dcc.Store(id='Score_Storage',
@@ -210,6 +247,11 @@ def create_ap(app, room_number):
                             dcc.Store(id='Team_Number',
                                       data=n_t),#, storage_type = 'session'),    
                             html.Div([
+                                #Maybe useless, button to update game if it has been closed
+                                html.Button('Mise à jour',
+                                    id='Refresh',
+                                    n_clicks=0),
+                                
                                 ### Maybe useless, a display to indicate how many turns have been played
                                 html.H1(id='Joueur',
                                         children=['Tour numéro: {}'.format(Turn_Counter)]),
@@ -484,10 +526,13 @@ def create_ap(app, room_number):
     #   Output('Graph_Live_Stat', 'figure'),
     #  Output('Stat_Graph', 'data'),
         Output('Y_Live-Stat','data'),
+        Output( 'Refresh','n_clicks'),
+
 
 
         
         Input('basic-interactions', 'clickData'),
+        Input( 'Refresh','n_clicks'),
         Input( 'cancel_round','n_clicks'),
         Input( 'submit_round','n_clicks'),
         Input( 'precedent_round','n_clicks'),
@@ -513,12 +558,145 @@ def create_ap(app, room_number):
         
         )
 
-    def Score_All_In_One(clickData, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, Dropdown_Value, Turn, Dart_Number, Score_History, data_Table, data_Live_New_Way, Stat_Live, data_Historique, fig_Stat_Live,Y_Live):
+    def Score_All_In_One(clickData, n_clicks_Refresh, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, Dropdown_Value, Turn, Dart_Number, Score_History, data_Table, data_Live_New_Way, Stat_Live, data_Historique, fig_Stat_Live,Y_Live):
         
-        Team_Number_Game = len(  list(Team_List.keys()) )
+        Team_List = {}
+        dic = open_dic(os.path.join(local_path, "meta.pickle"))
+        print(dic)
+        
+        for i, t in enumerate(dic["teams"]):
+            player = dic["picked_players"][i]
+            
+
+            if t in Team_List.keys():
+                Team_List[t].append(player)
+            else:
+                Team_List[t] = [player]
+
+        n_t = len(Team_List)
+
+        #Score_Live = [[t] + [None]*6 for t in Team_List]
+
+        #darts_3_column = ['Equipe'] + \
+             #       [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
+        index_3 = [Team_List[list(Team_List.keys())[i]][0] for i in range(n_t)]
+
+
+        #data_Live_New_Way = pd.DataFrame(np.array(Score_Live),
+        #                                columns=darts_3_column)
+        print(data_Live_New_Way)
+      #  print(index_3)
+      #  data_Live_New_Way["index"] = index_3
+
+        for i in range (0 ,len(data_Live_New_Way) ):
+            data_Live_New_Way[ i ]['Equipe'] = list(Team_List.keys())[i]
+
+        print(data_Live_New_Way)
+
+        
+        
+
+        #data_Live_New_Way = data_Live_New_Way.to_dict('records')
+        
+        
+        if os.path.isfile(os.path.join(local_path, "Turn_Counter.txt")):
+            print('The file was already there')
+            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "r")
+            f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "r")
+            Turn = int(f1.read())
+            Dart_number = int(f2.read())
+
+            
+
+            Score_History = np.load(os.path.join(local_path, 'Partie_Live.npy'),allow_pickle=True)
+            Score_History = Score_History.tolist()
+
+
+            
+        else:
+            print('the file needs to be created')
+            Turn = 0
+            Dart_Number = 0
+            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
+            f1.write(str(Turn))
+            f1.close()
+
+            f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "x")
+            f2.write(str(Dart_Number))
+            f2.close()
+            
+            np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+            np.save(os.path.join(local_path, 'Score.npy'),data_Table)
+
+
+            
+
+
+
+
+
+
+ #       if len(os.listdir(local_path)) == 1 : # This means we have just created the folder, we therefore need to initialize everybody
+  ##          Turn = 0
+    #        Dart_Number = 0
+     #       f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
+      #      f1.write(str(Turn))
+       #     f1.close()
+
+        #    f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "x")
+         #   f2.write(str(Dart_Number))
+          #  f2.close()
+
+            #Deroulement_de_Partie = pd.DataFrame(Score_History)
+#            Score_History.to_csv(os.path.join(local_path, 'Partie_Live.csv'))
+           # np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+
+        
+        if n_clicks_Refresh == 1: # You clicked the refresh button
+
+            n_clicks_Refresh = 0
+            
+            
+            
+            
+            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "r")
+            f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "r")
+
+         #   Score_History = loadtxt(os.path.join(local_path, 'Partie.csv'), delimiter=',')
+         #   Score_History = pd.read_csv(os.path.join(local_path, 'Partie_Live.csv'), delimiter=',')
+            Score_History = np.load(os.path.join(local_path, 'Partie_Live.npy'),allow_pickle=True)
+            Score_History = Score_History.tolist()
+
+            data_Table = np.load(os.path.join(local_path, 'Score.npy'),allow_pickle=True)
+            data_Table = data_Table.tolist()
+
+
+            print('Score History after loading :', Score_History)
+            print('dtype :',type(Score_History))
+
+            #print(f1.read())
+            #print(int(f1.read()))
+
+
+            Turn = int(f1.read())
+            Dart_number = int(f2.read())
+            print('Hello there', Turn)
+        
+
+
+
+     #   else : # This means the game has already started and we want to extract data from the files
+
+
+
+        Team_Number_Game = len( list(Team_List.keys()))
         Turn_Number = int( Turn / Team_Number_Game ) + 1
         Team_Turn = Turn % Team_Number_Game    
         Next_Player = (Turn + 1) % Team_Number_Game
+
+        data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game , Team_List)
+
+
         
 
 
@@ -578,6 +756,20 @@ def create_ap(app, room_number):
 
 
             data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game , Team_List)
+
+            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
+            f1.write(str(Turn))
+            f1.close()
+
+#            Deroulement_de_Partie = pd.DataFrame(Score_History)
+#            Deroulement_de_Partie.to_csv(os.path.join(local_path, 'Partie.csv'))
+#            Score_History.to_csv(os.path.join(local_path, 'Partie_Live.csv'))
+            print('Score History before saving :', Score_History)
+            print('dtype :',type(Score_History))
+
+            np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+            np.save(os.path.join(local_path, 'Score.npy'),data_Table)
+
 
 
                             
@@ -641,8 +833,21 @@ def create_ap(app, room_number):
                 
                 
         Affichage = ['Tour numéro: {}'.format(Turn_Number) ]  
+
+        # Save info to files
+
+  #      f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
+  #      f1.write(str(Turn))
+  #      f1.close()
+
+        f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "w")
+        f2.write(str(Dart_Number))
+        f2.close()
+
+    #    Deroulement_de_Partie = pd.DataFrame(Score_History)
+     #   Deroulement_de_Partie.to_csv(os.path.join(local_path, 'Partie.csv'))
         
-        return   Dart_Number, n_clicks_Cancel, data_Table, n_clicks_Submit, Turn, Score_History, clickData, n_clicks_precedent, Affichage, data_Live_New_Way, Stat_Live, data_Historique, Y_Live#, fig_Stat_Live, Y_Live #Stat_Graph_Live
+        return   Dart_Number, n_clicks_Cancel, data_Table, n_clicks_Submit, Turn, Score_History, clickData, n_clicks_precedent, Affichage, data_Live_New_Way, Stat_Live, data_Historique, Y_Live, n_clicks_Refresh#, fig_Stat_Live, Y_Live #Stat_Graph_Live
                 
 
     @app.callback(

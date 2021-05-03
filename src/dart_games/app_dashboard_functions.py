@@ -1,5 +1,7 @@
 import dash_html_components as html
 
+import os
+
 import pandas as pd
 import numpy as np
 
@@ -601,8 +603,11 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
     
     New_Stats = [Stat_Live[Player_Turn][i] for i in Stat_Live[Player_Turn]]
-    New_Stats.remove(New_Stats[0])
+   # print('New_Stats =', New_Stats)
+
+  #  New_Stats.remove(New_Stats[0])
     Y_Live.append(New_Stats)
+   # print('Y_live =', Y_Live)
 
 
     
@@ -634,12 +639,13 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
    #         continue
 #   ###         Y[i].remove(Y[i][0])
 
+        print('Y_Live =', Y_Live)
         X[(j+1) % Player_Number_Game].append(Y_Live[j][5])
         Y[(j+1) % Player_Number_Game].append(Y_Live[j][Dropdown_Value])
 
         
     for i in range (0, Player_Number_Game):
-        if X[i][0] == 0:
+        if X[i][0] == '0':
             X[i].remove(X[i][0])
             Y[i].remove(Y[i][0])
 
@@ -648,13 +654,17 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
         fig_Stat_Live['data'][i]['x'] = X[i]
         fig_Stat_Live['data'][i]['y'] = Y[i]
     
-    
+
+#    print(fig_Stat_Live)
+   # print('Y_Live =', Y_Live)
+    X_Max =   float(max(max( x) for x in X ))
+    Y_Max =   float(max(max( x) for x in Y ))
     fig_Stat_Live['layout']['yaxis']['title']['text'] = Column_Live_Stats_Graph[Dropdown_Value]
-    fig_Stat_Live['layout']['xaxis']['domain'] = [0.0, np.max(X[-1]) + 1]
-    Y_Max =   max(max( x) for x in Y )
+    fig_Stat_Live['layout']['xaxis']['domain'] = [0.0, X_Max + 1]
+    
     fig_Stat_Live['layout']['yaxis']['domain'] = [0.0, Y_Max + 0.5]     
-    print('X:', X)
-    print('Y:', Y)
+ #   print('X:', X)
+ #   print('Y:', Y)
 
     for i in range (0, Player_Number_Game):
         fig_Stat_Live['data'][i].update(mode='markers+lines', hovertemplate =f'<b>Fleche 1:{Score_History[-3][3]:.0f}</b><br>Fleche 2:{Score_History[-2][3]:.3f} <br>Fleche3:{Score_History[-1][3]:.3f} ')
@@ -662,30 +672,6 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
 
         print('Score History:', Score_History[-1])
 
-         #   Score_History.append([Player_Turn,Turn_Counter_Index + 1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
-
-    
-
-
-
- #       fig_Stat_Live['data'][Player_Turn]['x'].append(Stat_Live[Player_Turn]['Tour'])
-
-  #  if  fig_Stat_Live['data'][Player_Turn]['x'][0] == 0:
- #       print('deleting first value of Y Live')
- #       Y_Live.remove(Y_Live[0])
-  #      fig_Stat_Live['data'][Player_Turn]['x'].remove(fig_Stat_Live['data'][Player_Turn]['x'][0])
-
- #   New_Y = []
-
-#    for i in range (1, len(Y_Live)):
-#        if (i-1) % Player_Number_Game == Player_Turn:
-
-#            New_Y.append(Y_Live[i][Dropdown_Value])
-
-
-#    fig_Stat_Live['data'][Player_Turn]['y'] = New_Y
-    
-#    fig_Stat_Live['layout']['yaxis']['title']['text'] = Column_Live_Stats_Graph[Dropdown_Value]
 
     return fig_Stat_Live
 
@@ -707,3 +693,19 @@ def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
     data_Live_New_Way[Turn % Team_Number_Game ]['index'] = Player_Turn
 
     return data_Live_New_Way
+
+def Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live):
+
+    f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
+    f1.write(str(Turn))
+    f1.close()
+            
+    np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+    np.save(os.path.join(local_path, 'Partie_Historique.npy'),data_Historique)
+    np.save(os.path.join(local_path, 'Score.npy'),data_Table)
+    np.save(os.path.join(local_path, 'Graph_Partie.npy'),Y_Live)
+    np.save(os.path.join(local_path, 'Stats_Partie.npy'),Stat_Live)
+
+
+
+            

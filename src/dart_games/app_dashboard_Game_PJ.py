@@ -29,7 +29,8 @@ from .app_dashboard_functions import (discrete_background_color_bins,
                                       Storage_Player_Separation,
                                       Update_Live_Stats,
                                       Update_Live_Graph,
-                                      Update_Live_Player)
+                                      Update_Live_Player,
+                                      Save_Everyone)
 
 
 # mise a jour du tableau df_players
@@ -196,21 +197,6 @@ def create_ap(app, room_number):
         fig_Stat.data[i].update(mode='markers+lines')
 
 
-    #df = pd.DataFrame({
-    #   "x": [1,2,1,2],
-    #  "y": [1,2,3,4],
-    # "customdata": [1,2,3,4],
-        #"fruit": ["apple", "apple", "orange", "orange"]
-    #})
-
-
-
-
-    #fig_Stat = px.scatter(x=[0 for i in range ( 0, Player_Number)], y=[0 for i in range ( 0, Player_Number)], color=Player_List)
-
-    #fig_Stat.update_layout(clickmode='event+select')
-
-    #fig_Stat.update_traces(marker_size=20)
 
     (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-1])
 
@@ -229,23 +215,10 @@ def create_ap(app, room_number):
                         style=tab_style,
                         selected_style=tab_selected_style, 
                         children = [    
-                            # Some storing variable, doesn't do much 
-                            # yet but could be a way to not 
-                            # lose data once we refresh
-                            dcc.Store(id='Turn_Counter',
-                                      data=Turn_Counter),
-#                                      storage_type='session'),
+                            
                             dcc.Store(id='Dart_Counter',
                                       data=Flechette_Compteur),#, storage_type = 'session'),
-                            dcc.Store(id='Score_Storage',
-                                      data=Score_Storage),#, storage_type = 'session'),
-                        # dcc.Store(id='Stat_Graph',data = df_Graph_Live),
-                            dcc.Store(id='Y_Live-Stat',
-                                      data=Y_Live_Stats),    
-                            dcc.Store(id='Game_Players',
-                                      data=Team_List),# storage_type = 'session'),
-                            dcc.Store(id='Team_Number',
-                                      data=n_t),#, storage_type = 'session'),    
+                      
                             html.Div([
                                 #Maybe useless, button to update game if it has been closed
                                 html.Button('Mise à jour',
@@ -374,7 +347,6 @@ def create_ap(app, room_number):
                 
                         data = df_Stat_Live.to_dict('records'),
 
-                    # editable=True,
                 ),
                 
 
@@ -426,7 +398,6 @@ def create_ap(app, room_number):
                 
                         data = df_Score_Storage.to_dict('records'),
 
-                    # editable=True,
                 ),
                 
                     
@@ -448,18 +419,24 @@ def create_ap(app, room_number):
 
         
         Input( 'Dart_Counter','data'),
-        Input( 'Turn_Counter','data'),
+    #    Input( 'Turn_Counter','data'),
         State('Score_Table', 'data'),
         State('Score_Live_New_Way', 'data')   ,
-        State('Team_Number', 'data'),
+    #    State('Team_Number', 'data'),
         State( 'Historique_Partie','data'),
 
         
         
     )
 
-    def Update_PlayerTurn_Display(Dart_Number, Turn_Counter, data_Table, data_Live_New_Way, Team_Number_Game,data_Historique):
+    def Update_PlayerTurn_Display(Dart_Number, data_Table, data_Live_New_Way, data_Historique):
         
+        f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "r")
+        f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "r")
+        Turn_Counter = int(f1.read())
+        Dart_number = int(f2.read())
+
+        Team_Number_Game = n_t
         Turn_Counter_Index = Turn_Counter % Team_Number_Game
         
         Player_Line_Dart_Column = Which_Line(Turn_Counter_Index, data_Live_New_Way, Dart_Number)
@@ -515,17 +492,12 @@ def create_ap(app, room_number):
         Output( 'cancel_round','n_clicks'),
         Output('Score_Table', 'data'),
         Output( 'submit_round','n_clicks'),
-        Output( 'Turn_Counter','data'),
-        Output( 'Score_Storage','data'),
         Output('basic-interactions', 'clickData'),
         Output('precedent_round', 'n_clicks'),
         Output( 'Joueur','children'),
         Output('Score_Live_New_Way', 'data'),    
         Output('Stat_Live', 'data'),
         Output('Historique_Partie','data'),
-    #   Output('Graph_Live_Stat', 'figure'),
-    #  Output('Stat_Graph', 'data'),
-        Output('Y_Live-Stat','data'),
         Output( 'Refresh','n_clicks'),
 
 
@@ -540,25 +512,19 @@ def create_ap(app, room_number):
 
 
         
-        State( 'Turn_Counter','data'),
 
         State( 'Dart_Counter','data'),
-        State( 'Score_Storage','data'),
         State('Score_Table', 'data'),
         State('Score_Live_New_Way', 'data'), 
         State('Stat_Live', 'data'),
         State('Historique_Partie','data'),
         State('Graph_Live_Stat', 'figure'),
-        State('Y_Live-Stat','data')
-    #   State('Stat_Graph', 'data'),
-
-
 
 
         
         )
 
-    def Score_All_In_One(clickData, n_clicks_Refresh, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, Dropdown_Value, Turn, Dart_Number, Score_History, data_Table, data_Live_New_Way, Stat_Live, data_Historique, fig_Stat_Live,Y_Live):
+    def Score_All_In_One(clickData, n_clicks_Refresh, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, Dropdown_Value,  Dart_Number, data_Table, data_Live_New_Way, Stat_Live, data_Historique, fig_Stat_Live):
         
         Team_List = {}
         dic = open_dic(os.path.join(local_path, "meta.pickle"))
@@ -575,29 +541,14 @@ def create_ap(app, room_number):
 
         n_t = len(Team_List)
 
-        #Score_Live = [[t] + [None]*6 for t in Team_List]
-
-        #darts_3_column = ['Equipe'] + \
-             #       [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
+        
         index_3 = [Team_List[list(Team_List.keys())[i]][0] for i in range(n_t)]
 
-
-        #data_Live_New_Way = pd.DataFrame(np.array(Score_Live),
-        #                                columns=darts_3_column)
-        print(data_Live_New_Way)
-      #  print(index_3)
-      #  data_Live_New_Way["index"] = index_3
 
         for i in range (0 ,len(data_Live_New_Way) ):
             data_Live_New_Way[ i ]['Equipe'] = list(Team_List.keys())[i]
 
-        print(data_Live_New_Way)
-
-        
-        
-
-        #data_Live_New_Way = data_Live_New_Way.to_dict('records')
-        
+                
         
         if os.path.isfile(os.path.join(local_path, "Turn_Counter.txt")):
             print('The file was already there')
@@ -611,12 +562,25 @@ def create_ap(app, room_number):
             Score_History = np.load(os.path.join(local_path, 'Partie_Live.npy'),allow_pickle=True)
             Score_History = Score_History.tolist()
 
+            data_Historique = np.load(os.path.join(local_path, 'Partie_Historique.npy'),allow_pickle=True)
+            data_Historique = data_Historique.tolist()
+
+            data_Table = np.load(os.path.join(local_path, 'Score.npy'),allow_pickle=True)
+            data_Table = data_Table.tolist()
+
+            Y_Live = np.load(os.path.join(local_path, 'Graph_Partie.npy'), allow_pickle=True)
+            Y_Live = Y_Live.tolist()
+
+            Stat_Live = np.load(os.path.join(local_path, 'Stats_Partie.npy'), allow_pickle=True)
+            Stat_Live = Stat_Live.tolist()
+
 
             
         else:
             print('the file needs to be created')
             Turn = 0
             Dart_Number = 0
+            Score_History= []
             f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
             f1.write(str(Turn))
             f1.close()
@@ -626,30 +590,10 @@ def create_ap(app, room_number):
             f2.close()
             
             np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+            np.save(os.path.join(local_path, 'Partie_Historique.npy'),data_Historique)
             np.save(os.path.join(local_path, 'Score.npy'),data_Table)
-
-
-            
-
-
-
-
-
-
- #       if len(os.listdir(local_path)) == 1 : # This means we have just created the folder, we therefore need to initialize everybody
-  ##          Turn = 0
-    #        Dart_Number = 0
-     #       f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
-      #      f1.write(str(Turn))
-       #     f1.close()
-
-        #    f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "x")
-         #   f2.write(str(Dart_Number))
-          #  f2.close()
-
-            #Deroulement_de_Partie = pd.DataFrame(Score_History)
-#            Score_History.to_csv(os.path.join(local_path, 'Partie_Live.csv'))
-           # np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
+            np.save(os.path.join(local_path, 'Graph_Partie.npy'),Y_Live_Stats)
+            np.save(os.path.join(local_path, 'Stats_Partie.npy'),Stat_Live)
 
         
         if n_clicks_Refresh == 1: # You clicked the refresh button
@@ -661,26 +605,26 @@ def create_ap(app, room_number):
             
             f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "r")
             f2 = open(os.path.join(local_path, "Flechette_Compteur.txt"), "r")
+            Turn = int(f1.read())
+            Dart_number = int(f2.read())
 
-         #   Score_History = loadtxt(os.path.join(local_path, 'Partie.csv'), delimiter=',')
-         #   Score_History = pd.read_csv(os.path.join(local_path, 'Partie_Live.csv'), delimiter=',')
             Score_History = np.load(os.path.join(local_path, 'Partie_Live.npy'),allow_pickle=True)
             Score_History = Score_History.tolist()
 
             data_Table = np.load(os.path.join(local_path, 'Score.npy'),allow_pickle=True)
             data_Table = data_Table.tolist()
 
+            Y_Live = np.load(os.path.join(local_path, 'Graph_Partie.npy'),allow_pickle=True)
+            Y_Live = Y_Live.tolist()
 
-            print('Score History after loading :', Score_History)
-            print('dtype :',type(Score_History))
+            Stat_Live= np.load(os.path.join(local_path, 'Stats_Partie.npy'),allow_pickle=True)
+            Stat_Live = Stat_Live.tolist()
 
-            #print(f1.read())
-            #print(int(f1.read()))
+            data_Historique = np.load(os.path.join(local_path, 'Partie_Historique.npy'),allow_pickle=True)
+            data_Historique = data_Historique.tolist()
 
 
-            Turn = int(f1.read())
-            Dart_number = int(f2.read())
-            print('Hello there', Turn)
+            
         
 
 
@@ -748,7 +692,8 @@ def create_ap(app, room_number):
 
     #        Stat_Live, fig_Stat_Live, Y_Live = Update_Live_Stats(Darts_Total,Score_History,Player_Turn, Player_List,Stat_Live, Turn,fig_Stat_Live, Dropdown_Value, Y_Live, Column_Live_Stats_Graph)
             Stat_Live, Y_Live= Update_Live_Stats(Darts_Total,Score_History,Team_Turn, list(Team_List.keys()),Stat_Live, Turn, Y_Live)
-            print('Stat live has been updated')
+
+
 
             
             Turn = Turn + 1 # change index for next player
@@ -757,18 +702,8 @@ def create_ap(app, room_number):
 
             data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game , Team_List)
 
-            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
-            f1.write(str(Turn))
-            f1.close()
+            Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live)
 
-#            Deroulement_de_Partie = pd.DataFrame(Score_History)
-#            Deroulement_de_Partie.to_csv(os.path.join(local_path, 'Partie.csv'))
-#            Score_History.to_csv(os.path.join(local_path, 'Partie_Live.csv'))
-            print('Score History before saving :', Score_History)
-            print('dtype :',type(Score_History))
-
-            np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
-            np.save(os.path.join(local_path, 'Score.npy'),data_Table)
 
 
 
@@ -791,8 +726,8 @@ def create_ap(app, room_number):
 
                 data_Table, Score_History, data_Historique, Stat_Live, fig_Stat_Live, Y_Live = Remove_Last_Round_New(Team_Number_Game, data_Table, Score_History, Darts_Total, Player_Precedent,Game,Turn,data_Historique, Stat_Live, fig_Stat_Live, Y_Live)
                 
-        
             
+            Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live)
             
         
         
@@ -844,10 +779,8 @@ def create_ap(app, room_number):
         f2.write(str(Dart_Number))
         f2.close()
 
-    #    Deroulement_de_Partie = pd.DataFrame(Score_History)
-     #   Deroulement_de_Partie.to_csv(os.path.join(local_path, 'Partie.csv'))
         
-        return   Dart_Number, n_clicks_Cancel, data_Table, n_clicks_Submit, Turn, Score_History, clickData, n_clicks_precedent, Affichage, data_Live_New_Way, Stat_Live, data_Historique, Y_Live, n_clicks_Refresh#, fig_Stat_Live, Y_Live #Stat_Graph_Live
+        return   Dart_Number, n_clicks_Cancel, data_Table, n_clicks_Submit, clickData, n_clicks_precedent, Affichage, data_Live_New_Way, Stat_Live, data_Historique, n_clicks_Refresh#, fig_Stat_Live, Y_Live #Stat_Graph_Live
                 
 
     @app.callback(
@@ -867,28 +800,32 @@ def create_ap(app, room_number):
         State( 'Stat_Dropdown', 'value'),
         State('Stat_Live', 'data'),
         State('Graph_Live_Stat', 'figure'),
-        State('Y_Live-Stat','data'),
-        State( 'Turn_Counter','data'),
-        State( 'Score_Storage','data'),
 
-
-    #   State('Stat_Graph', 'data'),
     )
 
-    def Update_Graphs(n_click_Graph,Dropdown_Value,Stat_Live,fig_Stat_Live, Y_Live,Turn,Score_History):
+    def Update_Graphs(n_click_Graph,Dropdown_Value,Stat_Live,fig_Stat_Live):
 
         if n_click_Graph != 0:
             
             n_click_Graph = 0
+            f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "r")
+            Turn = int(f1.read())
+
+            Score_History = np.load(os.path.join(local_path, 'Partie_Live.npy'),allow_pickle=True)
+            Score_History = Score_History.tolist()
+
+            Y_Live = np.load(os.path.join(local_path, 'Graph_Partie.npy'), allow_pickle=True)
+            Y_Live = Y_Live.tolist()
+
             Team_Number_Game = len(list(Team_List.keys()))
-            Team_Turn = Turn % Team_Number_Game    
-        
+            Team_Turn = Turn % Team_Number_Game          
 
             fig_Stat_Live = Update_Live_Graph(Stat_Live,Team_Turn,list(Team_List.keys()), Y_Live,fig_Stat_Live, Dropdown_Value, Column_Live_Stats_Graph,Score_History)
 
-        print('Exiting graph callback')
 
         return fig_Stat_Live, n_click_Graph
+
+
     return app, layout
 
         

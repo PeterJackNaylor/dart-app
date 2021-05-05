@@ -16,20 +16,14 @@ def init_db(Team_List, n_t, Game):
     # Score_Init = [0 for _ in Game]
     
 
-    Score_Live = [[t] + [None]*6 for t in Team_List]
+    
 
     Turn_Counter = 0
     Flechette_Compteur = 0
 
     df_Score = init_df_score(n_t, Game, Team_List)
 
-    darts_3_column = ['Equipe'] + \
-                     [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
-    index_3 = [Team_List[list(Team_List.keys())[i]][0] for i in range(n_t)]
-
-    df_Score_Live_New_Way = pd.DataFrame(np.array(Score_Live),
-                                         columns=darts_3_column)
-    df_Score_Live_New_Way["index"] = index_3
+    df_score_live = init_df_live(n_t, Game, Team_List)
 
     Column_Live_Stats = ['# Touche/ Tour',
                          '# de triple',
@@ -65,7 +59,8 @@ def init_db(Team_List, n_t, Game):
 
 
     (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-1])
-    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_Score_Live_New_Way, df_Score, df_Stat_Live, Column_Live_Stats_Graph, fig_Stat, df_Score_Storage, legend, Column_Storage
+    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, df_Stat_Live, Column_Live_Stats_Graph, fig_Stat, df_Score_Storage, legend, Column_Storage
+
 
 def init_stat_live(n, teams):
     Column_Live_Stats_Graph = ['# Touche/ Tour',
@@ -86,6 +81,16 @@ def init_stat_live(n, teams):
 def init_df_score(n, game, teams):
     return pd.DataFrame(np.zeros((n, len(game)), dtype=int),
                         columns=game, index=list(teams.keys()))
+def init_df_live(n, game, teams):
+    
+    column = ['Equipe'] + \
+                     [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
+    index = [teams[list(teams.keys())[i]][0] for i in range(n)]
+    score = [[t] + [None]*6 for t in teams]
+    df_score = pd.DataFrame(np.array(score),
+                            columns=column)
+    df_score["index"] = index
+    return df_score
 
 
 def load_local_dictionnary(local_path):
@@ -140,34 +145,3 @@ def load_var(local_path, list_variables, att):
                     item = []
         outputs.append(item)
     return outputs
-
-    # else:
-    #     print('the file needs to be created')
-    #     Turn = 0
-    #     Dart_Number = 0
-    #     Score_History= []
-    #     f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "x")
-    #     f1.write(str(Turn))
-    #     f1.close()
-
-    #     np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
-    #     np.save(os.path.join(local_path, 'Partie_Historique.npy'),data_Historique)
-    #     np.save(os.path.join(local_path, 'Score.npy'),data_Table)
-    #     np.save(os.path.join(local_path, 'Graph_Partie.npy'),y_live)
-    #     np.save(os.path.join(local_path, 'Stats_Partie.npy'),stat_live)
-
-    return Turn, Score_History, data_Table, data_Historique, y_live, stat_live
-
-def Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live):
-
-    f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
-    f1.write(str(Turn))
-    f1.close()
-
-    np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
-    np.save(os.path.join(local_path, 'Partie_Historique.npy'),data_Historique)
-    np.save(os.path.join(local_path, 'Score.npy'),data_Table)
-    np.save(os.path.join(local_path, 'Graph_Partie.npy'),Y_Live)
-    np.save(os.path.join(local_path, 'Stats_Partie.npy'),Stat_Live)
-
-

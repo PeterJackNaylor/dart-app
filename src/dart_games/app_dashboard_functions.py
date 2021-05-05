@@ -720,7 +720,8 @@ def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
     print(int(Turn / Team_Number_Game))
     print(Number_Of_Players)
     print(int(Turn / Team_Number_Game) %  Number_Of_Players)
-    data_Live_New_Way[Turn % Team_Number_Game ]['index'] = Player_Turn
+    print("data_Live_new_way", data_Live_New_Way)
+    data_Live_New_Way[Turn % Team_Number_Game]['index'] = Player_Turn
 
     return data_Live_New_Way
 
@@ -786,7 +787,8 @@ def End_Game(data_Table,
              Team_List,
              Darts_Total,
              Cricket):
-
+    print("Team_Turn", Team_Turn)
+    print("data_Table_end", data_Table)
     small_victory = all([data_Table[Team_Turn][el] == 3 for el in Cricket[:-1]])
     if small_victory: # end game criteria    
         print("small victory")

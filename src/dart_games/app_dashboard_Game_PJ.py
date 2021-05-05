@@ -38,7 +38,7 @@ from .html_components import (generate_tab_1,
 from .styles_dash import tab_style
 
 
-from .aux import init_db, load_local_dictionnary, load_var #load_local_cricket, 
+from .aux import init_db, load_local_dictionnary, load_var, init_df_live #load_local_cricket, 
 
 GAME_NAME = "Bruno"
 
@@ -180,7 +180,10 @@ def create_ap(app, room_number):
         clicked_on_precedent = n_clicks_precedent == 1
 
         Team_List, n_t = load_local_dictionnary(local_path)
-        
+        if len(data_Live_New_Way) != n_t:
+            data_Live_New_Way = init_df_live(n_t, Game, Team_List).to_dict('records')
+            
+        print("data_Live_New_Way", data_Live_New_Way)
         for i in range(len(data_Live_New_Way) ):
             data_Live_New_Way[ i ]['Equipe'] = list(Team_List.keys())[i]
             data_Live_New_Way[ i ]["index"] = Team_List[list(Team_List.keys())[i]][0]
@@ -196,8 +199,8 @@ def create_ap(app, room_number):
 
         if clicked_on_refresh: # You clicked the refresh button
             n_clicks_Refresh = 0
-            var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live',
-                            'Score', 'Y_Live']
+            var_to_load = ["Turn_Counter", 'data_Historique', 'Stat_Live',
+                           'Score_History', 'data_Table', 'Y_Live']
             Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
             
      #   else : # This means the game has already started and we want to extract data from the files
@@ -284,7 +287,6 @@ def create_ap(app, room_number):
 
         Affichage = ['Tour numéro: {}'.format(Turn_Number) ]  
 
-        print("data_Table2", )
 
         return Dart_Number, n_clicks_Cancel, data_Table, n_clicks_Submit, clickData, n_clicks_precedent, Affichage, data_Live_New_Way, Stat_Live, data_Historique, n_clicks_Refresh#, fig_Stat_Live, Y_Live #Stat_Graph_Live                
 

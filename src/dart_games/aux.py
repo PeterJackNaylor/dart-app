@@ -136,7 +136,7 @@ def load_var(local_path, list_variables, att):
                 f = np.load(os.path.join(local_path, name + ".npy"), allow_pickle=True)
                 item = f.tolist()
             else:
-                if name == 'Stats_Partie':
+                if name == 'Stat_Live':
                     _, item = init_stat_live(att['n_t'], att['Team_List'])
                     item = item.to_dict("records")
                 elif name == "data_Table":

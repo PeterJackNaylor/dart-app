@@ -171,7 +171,7 @@ def create_ap(app, room_number):
                          data_Table,#State 
                          data_Live_New_Way, Stat_Live, data_Historique,
                          fig_Stat_Live):#, Y_Live):
-        print("data_Table", data_Table)
+      #  print("data_Table", data_Table)
         # which click
         clicked_on_refresh = n_clicks_Refresh == 1
         clicked_on_dartboard = clickData is not None
@@ -183,7 +183,7 @@ def create_ap(app, room_number):
         if len(data_Live_New_Way) != n_t:
             data_Live_New_Way = init_df_live(n_t, Game, Team_List).to_dict('records')
             
-        print("data_Live_New_Way", data_Live_New_Way)
+      #  print("data_Live_New_Way", data_Live_New_Way)
         for i in range(len(data_Live_New_Way) ):
             data_Live_New_Way[ i ]['Equipe'] = list(Team_List.keys())[i]
             data_Live_New_Way[ i ]["index"] = Team_List[list(Team_List.keys())[i]][0]
@@ -194,8 +194,13 @@ def create_ap(app, room_number):
                        'Score_History', 'data_Table', 'Y_Live']
 
         Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
-        print("Score history load", Score_History)
-        print('Stat_Live load:',Stat_Live)
+      #  print("Score history load", Score_History)
+
+        if len( Y_Live) != 0:
+            for i in range (0, len( Y_Live)) :
+                for j in range (0, len(Y_Live[i])-1): 
+                    Y_Live[i][j]= float(Y_Live[i][j])
+        print('Y_Live load:',Y_Live)
 
         if clicked_on_refresh: # You clicked the refresh button
             n_clicks_Refresh = 0
@@ -261,17 +266,19 @@ def create_ap(app, room_number):
                 if Turn: # if it is pressed right at the beginning
                     Player_Precedent = (Turn - 1) % Team_Number_Game
                     Turn = Turn - 1 # think about this, maybe not true?
-                    print("score history", Score_History)
+            #        print("score history", Score_History)
                     data_Table, Score_History, data_Historique, Stat_Live, fig_Stat_Live, Y_Live = Remove_Last_Round_New(Team_Number_Game, 
                                         data_Table, Score_History, Darts_Total, Player_Precedent,Game,Turn,data_Historique, Stat_Live, fig_Stat_Live, Y_Live)
-                    print("score_history2", Score_History)
+             #       print("score_history2", Score_History)
+
+            print('Y_Live before save:',Y_Live)
 
             Save_Everyone(local_path, Turn, Score_History, 
                           data_Historique, data_Table, Y_Live, Stat_Live)
 
-            print("data", data_Live_New_Way)
+         #   print("data", data_Live_New_Way)
             print("stat", Stat_Live)
-            print("datahisto", data_Historique)
+         #   print("datahisto", data_Historique)
 
             # Game ending criteria. Saves all the data.   
             End_Game(data_Table,

@@ -492,8 +492,8 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     
      # enlever les eventuels degats infliger par les 3 dernieres flechettes.
     for i in range (0, Player_Number_Game):
-        print("data_tab", data_Table)
-        print("Score_History", Score_History)
+   #     print("data_tab", data_Table)
+   #     print("Score_History", Score_History)
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-1][5][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-2][5][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-3][5][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
@@ -525,11 +525,11 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     fig_Stat_Live['data'][Player_Precedent]['y'].pop(-1)
 
     print('Turn :', Turn_Counter)
-    print('Y_Live:', Y_Live)
+  #  print('Y_Live:', Y_Live)
     Y_Live.pop(-1)
 
     print('Turn :', Turn_Counter)
-    print('Y_Live:', Y_Live)
+  #  print('Y_Live:', Y_Live)
 
     if Turn_Counter == 0:
         Stat_Live[Player_Precedent]['Tour'] = 0
@@ -612,6 +612,7 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
 
     Touche_Total = 0
+    print('Dernier Tour', Dernier_Tour)
 
     if (Dernier_Tour[0][6] + Dernier_Tour[1][6] + Dernier_Tour[2][6] == 0) and (np.sum(Dernier_Tour[0][5]) + np.sum(Dernier_Tour[1][5]) + np.sum(Dernier_Tour[2][5]) == 0 ):
         Stat_Live[Player_Turn]['# de tour à vide'] = Stat_Live[Player_Turn]['# de tour à vide'] + 1
@@ -628,16 +629,18 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
                 Touche_Total = Touche_Total + Dernier_Tour[i][6] + np.sum(Dernier_Tour[i][5]) / Dernier_Tour[i][3]
 
-#    Stat_Live[Player_Turn]['# Touche/ Tour'] = ( Stat_Live[Player_Turn]['# Touche/ Tour'] * ( Dernier_Tour[0][1] -1) + Touche_Total ) / (Dernier_Tour[0][1])
+    Stat_Live[Player_Turn]['# Touche/ Tour'] = ( Stat_Live[Player_Turn]['# Touche/ Tour'] * ( Dernier_Tour[0][1] -1) + Touche_Total ) / (Dernier_Tour[0][1])
     Stat_Live[Player_Turn]['Tour'] = Turn_Number
 
     
     New_Stats = [Stat_Live[Player_Turn][i] for i in Stat_Live[Player_Turn]]
     Y_Live.append(New_Stats)
-   # print('Y_live =', Y_Live)
 
-    print('Stat_Live_Final:',Stat_Live)
+ #   for i in range (0, len( Y_Live)) :
+ #       for j in range (0, len(Y_Live[i])-1): 
+ #           Y_Live[i][j]= float(Y_Live[i][j])
 
+    print('Y_live =', Y_Live)
 
 
     
@@ -657,8 +660,8 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
     Player_Number_Game = len(Team_List)
 
 
-    print('Updating graph')
-    print('Stat_Live', Stat_Live[Player_Turn])
+#    print('Updating graph')
+#    print('Stat_Live', Stat_Live[Player_Turn])
     X = [[] for i in range (0, Player_Number_Game)]
     Y = [[] for i in range (0, Player_Number_Game)]
 
@@ -669,26 +672,26 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
    #         continue
 #   ###         Y[i].remove(Y[i][0])
 
-        print('Y_Live =', Y_Live)
+#        print('Y_Live =', Y_Live)
         X[(j+1) % Player_Number_Game].append(Y_Live[j][5])
         Y[(j+1) % Player_Number_Game].append(Y_Live[j][Dropdown_Value])
 
         
     for i in range(Player_Number_Game):
-        if X[i][0] == '0':
+        if X[i][0] == 0:
             X[i].remove(X[i][0])
             Y[i].remove(Y[i][0])
 
 
-        print('Player:', Team_List[i])
+#        print('Player:', Team_List[i])
         fig_Stat_Live['data'][i]['x'] = X[i]
         fig_Stat_Live['data'][i]['y'] = Y[i]
     
 
 #    print(fig_Stat_Live)
    # print('Y_Live =', Y_Live)
-    X_Max =   float(max(max( x) for x in X ))
-    Y_Max =   float(max(max( x) for x in Y ))
+ #   X_Max =   float(max(max( x) for x in X ))
+  #  Y_Max =   float(max(max( x) for x in Y ))
     fig_Stat_Live['layout']['yaxis']['title']['text'] = Column_Live_Stats_Graph[Dropdown_Value]
     X_Max =   max(max( float(x)) for x in X )
     Y_Max =   max(max( float(x)) for x in Y )
@@ -701,7 +704,7 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
         fig_Stat_Live['data'][i].update(mode='markers+lines', hovertemplate =f'<b>Fleche 1:{Score_History[-3][3]:.0f}</b><br>Fleche 2:{Score_History[-2][3]:.3f} <br>Fleche3:{Score_History[-1][3]:.3f} ')
         #fig_Stat_Live['data'][i].update_traces(mode="markers+lines", hovertemplate=None)
 
-        print('Score History:', Score_History[-1])
+  #      print('Score History:', Score_History[-1])
 
     return fig_Stat_Live
 
@@ -716,11 +719,11 @@ def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
     Team_Turn = list(Team_List.keys())[Turn % Team_Number_Game]
   #  Player_Turn = Team_List[Turn % Team_Number_Game][1][ int(Turn / Team_Number_Game) %  Number_Of_Players ]
     Player_Turn = Team_List[Team_Turn][int(Turn / Team_Number_Game) %  Number_Of_Players]
-    print(list(Team_List.keys())[Turn % Team_Number_Game])
-    print(int(Turn / Team_Number_Game))
-    print(Number_Of_Players)
-    print(int(Turn / Team_Number_Game) %  Number_Of_Players)
-    print("data_Live_new_way", data_Live_New_Way)
+  #  print(list(Team_List.keys())[Turn % Team_Number_Game])
+ #   print(int(Turn / Team_Number_Game))
+  #  print(Number_Of_Players)
+   # print(int(Turn / Team_Number_Game) %  Number_Of_Players)
+   # print("data_Live_new_way", data_Live_New_Way)
     data_Live_New_Way[Turn % Team_Number_Game]['index'] = Player_Turn
 
     return data_Live_New_Way

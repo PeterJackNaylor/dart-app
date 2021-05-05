@@ -1,13 +1,25 @@
 import dash_html_components as html
 
 import os
-
 import pandas as pd
 import numpy as np
 
-### Function that creates the color scale in the score table
 
-def discrete_background_color_bins(df, n_bins , columns ):
+# Function that creates the color scale in the score table
+def map_min_bound(f):
+    if f == 0.0:
+        return 0
+    elif f == 0.75:
+        return 1
+    elif f == 1.5:
+        return 2
+    elif f == 2.25:
+        return 3
+    else:
+        return None
+
+
+def discrete_background_color_bins(df, n_bins, columns):
 
 
 #    import colorlover
@@ -29,6 +41,7 @@ def discrete_background_color_bins(df, n_bins , columns ):
         ((df_max - df_min) * i) + df_min
         for i in bounds
     ]
+
     styles = []
     legend = []
     for i in range(1, len(bounds)):
@@ -64,35 +77,49 @@ def discrete_background_color_bins(df, n_bins , columns ):
                 'backgroundColor': backgroundColor,
                 'color': color
             })
+        s_dic = {'backgroundColor': backgroundColor,
+                 'borderLeft': '1px rgb(50, 50, 50) solid',
+                 'textAlign': 'center',
+                 'height': '25px'}
+
+        if min_bound == 2.25:
+            s_dic['color'] = 'white'
+
         legend.append(
             html.Div(style={'display': 'inline-block', 'width': '60px'}, children=[
-                html.Div(
-                    style={
-                        'backgroundColor': backgroundColor,
-                        'borderLeft': '1px rgb(50, 50, 50) solid',
-                        'height': '10px'
-                    }
-                ),
-                html.Small(round(min_bound, 2), style={'paddingLeft': '2px'})
+                html.Div(map_min_bound(min_bound),
+                    style=s_dic
+                )
             ])
         )
 
-    return (styles, html.Div(legend, style={'padding': '5px 0 5px 0'}))
+    return (styles, 
+            html.Div(legend, 
+                     style={'padding': '5px 0px 0px 0px',
+                            'margin-left' : "15px"}))
 
 
-def Storage_Player_Separation (data_Historique): #,data_Historique,Player_Number_Game):
-
-    style_data_conditional=[
-        {
-            'if': {
-                'filter_query': '{Flèche numéro} = 1',
+def Storage_Player_Separation(turn): #,data_Historique,Player_Number_Game):
+    if turn > 1:
+        style_data_conditional = [
+            {
+                'if': {
+                    'filter_query': '{Flèche numéro} = 1',
+                },
+                'backgroundColor': 'RebeccaPurple',
+                'color': 'white'
             },
-            'backgroundColor': 'RebeccaPurple',
-            'color': 'white'
-        },
-    ]
-
+        ]
+    else:
+        style_data_conditional = [
+                
+                            {
+                                'if': {'row_index': 'odd'},
+                                'backgroundColor': 'rgb(248, 248, 248)'
+                                }
+        ]
     return style_data_conditional
+
 
 #    if Turn_Counter % Darts_Total == 0 :
 
@@ -135,6 +162,9 @@ def Which_Line (Turn_Counter_Index, data_Live_New_Way, Dart_Number):
 
 
 def Douze_Turn(Game,Turn) :
+
+    if name == "Douze":
+        Game = ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score']
     Number_Open_Close = [{
                 'if': {'column_id' : Game[Turn] },
                 'backgroundColor': 'rgb(85, 85, 85)', # gris
@@ -146,12 +176,9 @@ def Douze_Turn(Game,Turn) :
 
 
 
-def Open_Or_Closed (Game,Team_Number_Game,data_Table,Turn_Counter_Index):
-
-
-    
-
-
+def Open_Or_Closed (name,Team_Number_Game,data_Table,Turn_Counter_Index):
+    if name == "Cricket":
+        Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
     Number_Open_Close = [None,None ,None ,None ,None ,None ,None  ] # doesn't do anything for the total Score    
 
     for j in range (0, len(Number_Open_Close) ):       
@@ -465,6 +492,8 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     
      # enlever les eventuels degats infliger par les 3 dernieres flechettes.
     for i in range (0, Player_Number_Game):
+        print("data_tab", data_Table)
+        print("Score_History", Score_History)
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-1][5][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-2][5][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-3][5][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
@@ -495,6 +524,8 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     fig_Stat_Live['data'][Player_Precedent]['x'].pop(-1) 
     fig_Stat_Live['data'][Player_Precedent]['y'].pop(-1)
 
+    print('Turn :', Turn_Counter)
+    print('Y_Live:', Y_Live)
     Y_Live.pop(-1)
 
     print('Turn :', Turn_Counter)
@@ -590,7 +621,6 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
         for i in range(0, Darts_Total):
                 
             if ( Dernier_Tour[i][6] != 0 ) or ( np.sum(Dernier_Tour[i][5]) != 0 ):
-
                 if Dernier_Tour[i][4] == 3:
                     Stat_Live[Player_Turn]['# de triple'] = Stat_Live[Player_Turn]['# de triple'] + 1
                 elif Dernier_Tour[i][4] == 2:
@@ -603,9 +633,6 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
     
     New_Stats = [Stat_Live[Player_Turn][i] for i in Stat_Live[Player_Turn]]
-   # print('New_Stats =', New_Stats)
-
-  #  New_Stats.remove(New_Stats[0])
     Y_Live.append(New_Stats)
    # print('Y_live =', Y_Live)
 
@@ -632,7 +659,7 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
     X = [[] for i in range (0, Player_Number_Game)]
     Y = [[] for i in range (0, Player_Number_Game)]
 
-    for j in range (0, len(Y_Live)):
+    for j in range(len(Y_Live)):
 
  #       if Y_Live[j][5] == 0:
   #          Y_Live.remove(Y_Live[j])
@@ -644,7 +671,7 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
         Y[(j+1) % Player_Number_Game].append(Y_Live[j][Dropdown_Value])
 
         
-    for i in range (0, Player_Number_Game):
+    for i in range(Player_Number_Game):
         if X[i][0] == '0':
             X[i].remove(X[i][0])
             Y[i].remove(Y[i][0])
@@ -660,8 +687,9 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
     X_Max =   float(max(max( x) for x in X ))
     Y_Max =   float(max(max( x) for x in Y ))
     fig_Stat_Live['layout']['yaxis']['title']['text'] = Column_Live_Stats_Graph[Dropdown_Value]
+    X_Max =   max(max( float(x)) for x in X )
+    Y_Max =   max(max( float(x)) for x in Y )
     fig_Stat_Live['layout']['xaxis']['domain'] = [0.0, X_Max + 1]
-    
     fig_Stat_Live['layout']['yaxis']['domain'] = [0.0, Y_Max + 0.5]     
  #   print('X:', X)
  #   print('Y:', Y)
@@ -671,7 +699,6 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
         #fig_Stat_Live['data'][i].update_traces(mode="markers+lines", hovertemplate=None)
 
         print('Score History:', Score_History[-1])
-
 
     return fig_Stat_Live
 
@@ -694,18 +721,108 @@ def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
 
     return data_Live_New_Way
 
+
+def Number_Open_Close_f(name, Team_Number_Game, data_Table, Turn_Counter_Index, Turn_Counter):
+    if name == "Cricket":
+        Number_Open_Close = Open_Or_Closed(name,
+                                           Team_Number_Game,
+                                           data_Table,
+                                           Turn_Counter_Index)
+    elif name == "Douze":
+        Number_Open_Close = Douze_Turn(Game, 
+                                       int(Turn_Counter / Team_Number_Game))
+    return Number_Open_Close
+
+def submit_score(name, Cricket_Type, data_Live_New_Way, Team_Turn, Next_Player, Dart_Number,
+                 Turn, Team_Number_Game, data_Table, Score_History, Darts_Total, data_Historique,
+                 Column_Storage, Team_List, Stat_Live, Y_Live, local_path):
+    Turn_Number = int(Turn / Team_Number_Game) + 1
+    Darts, Coef, data_Live_New_Way, Dart_Number = Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number)
+
+    if name == "Cricket":
+        data_Table, Score_History = Score_Update_Cricket(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number ,Score_History, Cricket_Type)
+
+    elif name == "Douze":
+        Douze = ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score']
+        data_Table, Score_History = Score_Update_Douze(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number, Score_History, Douze)
+
+    
+    for i in range(Darts_Total):
+        data_Historique.append( {Column_Storage[j]:Score_History[-3+i][j] for j in range(len(Column_Storage))})
+        data_Historique[-1][Column_Storage[5]] = np.sum(Score_History[-3+i][5])  
+#     data_Historique[-1][Column_Storage[0]] = Team_List[Score_History[-3+i][0]]  
+        data_Historique[-1][Column_Storage[0]] = list(Team_List.keys())[Score_History[-3+i][0]]  
+
+    Stat_Live, Y_Live = Update_Live_Stats(Darts_Total,
+                                          Score_History,
+                                          int(Team_Turn), 
+                                          list(Team_List.keys()),
+                                          Stat_Live, 
+                                          Turn, 
+                                          Y_Live)
+
+    
+    Turn = Turn + 1 # change index for next player
+    
+    data_Live_New_Way = Update_Live_Player(data_Live_New_Way, Turn, 
+                                           Team_Number_Game , Team_List)
+
+    Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live)
+
+    return data_Live_New_Way, Stat_Live, Y_Live, Turn, data_Historique, data_Table, Score_History
+    
+                
+        
+                
+def End_Game(data_Table,
+             Team_Number_Game,
+             Team_Turn,
+             Score_History,
+             Team_List,
+             Darts_Total,
+             Cricket):
+
+    small_victory = all([data_Table[Team_Turn][el] == 3 for el in Cricket[:-1]])
+    if small_victory: # end game criteria    
+        print("small victory")
+        Score_min = min(data_Table[i]['Score'] for i in range(Team_Number_Game))
+        
+        print("data_Table:", data_Table)
+        print("Team_Number_Game:", Team_Number_Game)
+        print("Team_Turn:", Team_Turn)
+        print("Score_History:", Score_History)
+        print("Team_List:", Team_List)        
+        if data_Table[Team_Turn]['Score'] == Score_min:
+            Deroulement_de_Partie = pd.DataFrame(Score_History)
+            Deroulement_de_Partie.to_csv('Partie.csv')  # sauvegarde le derouler de partie
+            
+            Player_Game_Info= [[] for i in range(len(list(Team_List.keys())))]
+            
+            for i in range(len(Score_History)):
+                
+                Player_Game_Info[int(i/Darts_Total)%len(list(Team_List.keys()))].append(Score_History[i])
+
+                    
+            for i in range(len(Team_List)):   
+                Historic_Joueur = pd.read_csv('ressources/Player_Info/{}.csv'.format(list(Team_List.keys())[i]))
+                Partie_Joueur = Player_Game_Info[i]
+                
+                
+                Partie_Joueur = pd.DataFrame(Partie_Joueur,
+                                             columns=Column_Storage)
+
+
+                Partie_Joueur.to_csv('{}.csv'.format(list(Team_List.keys())[i]),index = False)
+
+
 def Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live):
 
     f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
     f1.write(str(Turn))
     f1.close()
-            
-    np.save(os.path.join(local_path, 'Partie_Live.npy'),Score_History)
-    np.save(os.path.join(local_path, 'Partie_Historique.npy'),data_Historique)
-    np.save(os.path.join(local_path, 'Score.npy'),data_Table)
-    np.save(os.path.join(local_path, 'Graph_Partie.npy'),Y_Live)
-    np.save(os.path.join(local_path, 'Stats_Partie.npy'),Stat_Live)
 
-
-
-            
+    np.save(os.path.join(local_path, 'Score_History.npy'), Score_History)
+    np.save(os.path.join(local_path, 'data_Historique.npy'), data_Historique)
+    np.save(os.path.join(local_path, 'data_Table.npy'), data_Table)
+    np.save(os.path.join(local_path, 'Y_Live.npy'), Y_Live)
+    np.save(os.path.join(local_path, 'Stat_Live.npy'), Stat_Live)

@@ -48,23 +48,30 @@ def add_dash_games(server, url_base):
         suppress_callback_exceptions=True,
         external_stylesheets=external_stylesheets
     )
+    def def_layout():
+        url_bar_and_content_div = html.Div([
+            dcc.Location(id='url', refresh=True),
+            html.Div(id='page-content')
+        ])
+        return url_bar_and_content_div
 
-    url_bar_and_content_div = html.Div([
-        dcc.Location(id='url', refresh=False),
-        html.Div(id='page-content')
-    ])
-    app.layout = url_bar_and_content_div
+    # url_bar_and_content_div = html.Div([
+    #     dcc.Location(id='url', refresh=False),
+    #     html.Div(id='page-content')
+    # ])
+    app.layout = def_layout
     generate_games(app)
 
     # Index callbacks
     @app.callback(Output('page-content', 'children'),
                   Input('url', 'pathname'))
     def display_page(pathname):
-        if session.get("current_user", None):
+        print("Don't forget to disable this")
+        if True: #session.get("current_user", None):
             global gb
             game_name = pathname.split('/')[2]
             room_number = pathname.split('/')[3]
-            if (room_number, game_name) in gb['live_games']:
+            if True:#(room_number, game_name) in gb['live_games']:
                 layout = load_game(f"{room_number}", game_name)
                 return layout
             else:

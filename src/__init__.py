@@ -10,8 +10,8 @@ def create_app():
     """Create Flask application."""
     app = Flask(__name__,
                 instance_relative_config=False)
-    # from .error_pages import add_error_pages
-    # app = add_error_pages(app)
+    from .error_pages import add_error_pages
+    app = add_error_pages(app)
     app.config.from_object('config')
 
     with app.app_context():

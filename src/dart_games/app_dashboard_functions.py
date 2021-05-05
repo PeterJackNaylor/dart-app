@@ -176,7 +176,8 @@ def Douze_Turn(Game,Turn) :
 
 
 
-def Open_Or_Closed (name,Team_Number_Game,data_Table,Turn_Counter_Index):
+def Open_Or_Closed (name, Team_Number_Game,
+                    data_Table, Turn_Counter_Index):
     if name == "Cricket":
         Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
     Number_Open_Close = [None,None ,None ,None ,None ,None ,None  ] # doesn't do anything for the total Score    

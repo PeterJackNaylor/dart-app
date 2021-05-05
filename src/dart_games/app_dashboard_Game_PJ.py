@@ -85,7 +85,8 @@ def create_ap(app, room_number):
 
         (styles, _) = discrete_background_color_bins(pd.DataFrame(data_Table), 4, game_att['Game'][:-1])
         # Shouldn't it be data_Table instead of df_Score?
-        
+        print('data_Table', data_Table)
+        print(game_att)
         Number_Open_Close = Number_Open_Close_f("Cricket", game_att['n_t'], data_Table,
                                                 Turn_Counter_Index, Turn_Counter)
 

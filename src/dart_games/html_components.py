@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_table
 
 from ..utils.plot_geojson import dart_plot
-
+from .aux import load_local_dictionnary, init_db, Column_Live_Stats_Graph
 from .styles_dash import (align_style,
                           style_table,
                           style_data_conditional,
@@ -105,7 +105,7 @@ def generate_tab_1(turn_n, dart_n, score, live_stats,
                    children=tab_child)
 
 
-def generate_tab_2(df_Stat_Live, Column_Live_Stats_Graph, fig_Stat):
+def generate_tab_2(df_Stat_Live, fig_Stat):
     children = []
 
     children += [dash_table.DataTable(
@@ -155,3 +155,24 @@ def generate_tab_3(df_Score_Storage):
                    selected_style=tab_selected_style,
                    children=children)
 
+
+def cricket_layout(local_path):
+
+    game_att = load_local_dictionnary(local_path, "Cricket")
+    
+    init = init_db(game_att)
+    Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats = init[0:4]
+    df_Score_Live_New_Way, df_Score, df_Stat_Live, fig_Stat = init[4:8]
+    df_Score_Storage, legend = init[8:10]
+
+    layout = html.Div([
+        dcc.Tabs(children=[
+                generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
+                               Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
+                               df_Score_Live_New_Way,
+                               df_Score, tab_style, legend),
+                generate_tab_2(df_Stat_Live, fig_Stat),
+                generate_tab_3(df_Score_Storage)
+            ]),
+    ])
+    return layout

@@ -7,7 +7,35 @@ import plotly.express as px
 from .app_dashboard_functions import discrete_background_color_bins
 from ..utils.pickle import open_dic
 
-def init_db(Team_List, n_t, Game):
+
+Column_Storage = ['Player',
+                  'Tour',
+                  'Flèche numéro',
+                  'Valeur',
+                  'Coef',
+                  'Dégats',
+                  'Ferme le chiffre']
+
+Column_Live_Stats = ['# Touche/ Tour',
+                     '# de triple',
+                     '# de double',
+                     '# de tour à vide',
+                     'Longest streak',
+                     'Tour']
+
+
+Column_Live_Stats_Graph = ['# Touche/ Tour',
+                           '# de triple',
+                           '# de double',
+                           '# de tour à vide',
+                           'Longest streak',
+                           'Tour',
+                           'Player']
+
+def init_db(att):
+    Team_List = att["Team_List"]
+    n_t = att["n_t"]
+    Game = att["Game"]
     Score_Storage = []
     # Douze = ['12', '13', '14', 'Double', '15', '16', '17', 'Triple',
     #          '18', '19', '20', 'Bull', 'Score']
@@ -23,29 +51,17 @@ def init_db(Team_List, n_t, Game):
 
     df_Score = init_df_score(n_t, Game, Team_List)
 
-    df_score_live = init_df_live(n_t, Game, Team_List)
+    df_score_live = init_df_live(att)
 
-    Column_Live_Stats = ['# Touche/ Tour',
-                         '# de triple',
-                         '# de double',
-                         '# de tour à vide',
-                         'Longest streak',
-                         'Tour']
+
 
     stat_init = np.zeros((n_t, len(Column_Live_Stats)), dtype=int)
     df_Stat_Live = pd.DataFrame(stat_init,
                                 columns=Column_Live_Stats)
     df_Stat_Live["index"] = list(Team_List.keys())
 
-    Column_Storage = ['Player',
-                      'Tour',
-                      'Flèche numéro',
-                      'Valeur',
-                      'Coef',
-                      'Dégats',
-                      'Ferme le chiffre']
     df_Score_Storage = pd.DataFrame(columns=Column_Storage)
-    Column_Live_Stats_Graph, df_Graph_Live = init_stat_live(n_t, Team_List) 
+    df_Graph_Live = init_stat_live(n_t, Team_List) 
     fig_Stat = px.scatter(df_Graph_Live,
                           x="Tour",
                           y="# Touche/ Tour",
@@ -59,29 +75,26 @@ def init_db(Team_List, n_t, Game):
 
 
     (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-1])
-    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, df_Stat_Live, Column_Live_Stats_Graph, fig_Stat, df_Score_Storage, legend, Column_Storage
+    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, df_Stat_Live, fig_Stat, df_Score_Storage, legend
 
 
 def init_stat_live(n, teams):
-    Column_Live_Stats_Graph = ['# Touche/ Tour',
-                               '# de triple',
-                               '# de double',
-                               '# de tour à vide',
-                               'Longest streak',
-                               'Tour',
-                               'Player']
 
     init_graph_live = np.zeros((n, len(Column_Live_Stats_Graph)), dtype=int)
 
     df_Graph_Live = pd.DataFrame(init_graph_live,
                                  columns=Column_Live_Stats_Graph)
     df_Graph_Live["index"] = list(teams.keys())
-    return Column_Live_Stats_Graph, df_Graph_Live
+    return df_Graph_Live
 
 def init_df_score(n, game, teams):
     return pd.DataFrame(np.zeros((n, len(game)), dtype=int),
                         columns=game, index=list(teams.keys()))
-def init_df_live(n, game, teams):
+def init_df_live(att):
+    n = att["n_t"]
+    game = att["Game"]
+    teams = att["Team_List"]
+    
     
     column = ['Equipe'] + \
                      [n.format(i) for i in range(1, 4) for n in ['Fleche {}', 'Coef {}']]
@@ -93,10 +106,16 @@ def init_df_live(n, game, teams):
     return df_score
 
 
-def load_local_dictionnary(local_path):
+def load_local_dictionnary(local_path, name):
+    Darts_Total = 3
+    if name == "Cricket":
+        Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
+    elif name == "Douze":
+        Game = ["12"]
     if os.path.isdir(local_path):
         print("loading local files")
         dic = open_dic(os.path.join(local_path, "meta.pickle"))
+
     else:
         print("taking default dic")
         dic = {"teams": ["Blue", "Red"],
@@ -112,8 +131,26 @@ def load_local_dictionnary(local_path):
             Team_List[t] = [player]
 
     n_t = len(Team_List)
-    return Team_List, n_t
 
+    game_att = {
+        "Game": Game,
+        "n_t": n_t,
+        "Team_List": Team_List,
+        "Darts_Total": Darts_Total,
+        'Cricket_Type' : 'Cut_Throat'
+    }
+    return game_att
+
+def check_if_init(data_Live_New_Way, game_att):
+    if len(data_Live_New_Way) != game_att['n_t']:
+        return True
+    else:
+        team_current = [d['Equipe'] for d in data_Live_New_Way]
+        team_file = [k for k in game_att['Team_List'].keys()]
+        if team_current != team_file:
+            return True
+        else:
+            return False
 
 
 def load_var(local_path, list_variables, att):
@@ -137,7 +174,7 @@ def load_var(local_path, list_variables, att):
                 item = f.tolist()
             else:
                 if name == 'Stat_Live':
-                    _, item = init_stat_live(att['n_t'], att['Team_List'])
+                    item = init_stat_live(att['n_t'], att['Team_List'])
                     item = item.to_dict("records")
                 elif name == "data_Table":
                     item = init_df_score(att['n_t'], att["Game"], att['Team_List']).to_dict("records")

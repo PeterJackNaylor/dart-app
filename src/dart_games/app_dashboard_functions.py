@@ -240,7 +240,7 @@ def Tables_Up_to_Date(Team_List,Score_Live,Score_Init, Game):
     return (data_Live_New_Way, data_Table)
 
 
-def Cancel_Button(data_Live_New_Way,Team_Turn):
+def Cancel_Button(data_Live_New_Way, Team_Turn):
 
         
     data_Live_New_Way[Team_Turn]['Fleche 1'] = None
@@ -492,8 +492,6 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     
      # enlever les eventuels degats infliger par les 3 dernieres flechettes.
     for i in range (0, Player_Number_Game):
-   #     print("data_tab", data_Table)
-   #     print("Score_History", Score_History)
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-1][5][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-2][5][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
         data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-3][5][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
@@ -524,12 +522,8 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     fig_Stat_Live['data'][Player_Precedent]['x'].pop(-1) 
     fig_Stat_Live['data'][Player_Precedent]['y'].pop(-1)
 
-    print('Turn :', Turn_Counter)
-  #  print('Y_Live:', Y_Live)
     Y_Live.pop(-1)
-
-    print('Turn :', Turn_Counter)
-  #  print('Y_Live:', Y_Live)
+    
 
     if Turn_Counter == 0:
         Stat_Live[Player_Precedent]['Tour'] = 0
@@ -620,8 +614,7 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
     else:
         for i in range(0, Darts_Total):
-                
-            if ( Dernier_Tour[i][6] != 0 ) or ( np.sum(Dernier_Tour[i][5]) != 0 ):
+            if (Dernier_Tour[i][6] != 0) or (np.sum(Dernier_Tour[i][5]) != 0):
                 if Dernier_Tour[i][4] == 3:
                     Stat_Live[Player_Turn]['# de triple'] = Stat_Live[Player_Turn]['# de triple'] + 1
                 elif Dernier_Tour[i][4] == 2:
@@ -714,17 +707,18 @@ def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dro
 
 
 def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
-
+    # print("start", data_Live_New_Way)
     Number_Of_Players = len(Team_List[ list(Team_List.keys())[Turn % Team_Number_Game] ])
     Team_Turn = list(Team_List.keys())[Turn % Team_Number_Game]
   #  Player_Turn = Team_List[Turn % Team_Number_Game][1][ int(Turn / Team_Number_Game) %  Number_Of_Players ]
     Player_Turn = Team_List[Team_Turn][int(Turn / Team_Number_Game) %  Number_Of_Players]
-  #  print(list(Team_List.keys())[Turn % Team_Number_Game])
- #   print(int(Turn / Team_Number_Game))
-  #  print(Number_Of_Players)
-   # print(int(Turn / Team_Number_Game) %  Number_Of_Players)
-   # print("data_Live_new_way", data_Live_New_Way)
+    # print(list(Team_List.keys())[Turn % Team_Number_Game])
+    # print(int(Turn / Team_Number_Game))
+    # print(Number_Of_Players)
+    # print(int(Turn / Team_Number_Game) %  Number_Of_Players)
+    # print("data_Live_new_way", data_Live_New_Way)
     data_Live_New_Way[Turn % Team_Number_Game]['index'] = Player_Turn
+    # print("end", data_Live_New_Way)
 
     return data_Live_New_Way
 
@@ -790,8 +784,7 @@ def End_Game(data_Table,
              Team_List,
              Darts_Total,
              Cricket):
-    print("Team_Turn", Team_Turn)
-    print("data_Table_end", data_Table)
+
     small_victory = all([data_Table[Team_Turn][el] == 3 for el in Cricket[:-1]])
     if small_victory: # end game criteria    
         print("small victory")

@@ -539,12 +539,12 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
         Stat_Live[Player_Precedent]['# de tour à vide'] = 0
         Stat_Live[Player_Precedent]['Longest streak'] = 0
     else:
-        Stat_Live[Player_Precedent]['Tour'] = Y_Live[-2][5]
-        Stat_Live[Player_Precedent]['# Touche/ Tour'] = Y_Live[-2][0]
-        Stat_Live[Player_Precedent]['# de triple'] = Y_Live[-2][1]
-        Stat_Live[Player_Precedent]['# de double'] = Y_Live[-2][2]
-        Stat_Live[Player_Precedent]['# de tour à vide'] = Y_Live[-2][3]
-        Stat_Live[Player_Precedent]['Longest streak'] = Y_Live[-2][4]
+        Stat_Live[Player_Precedent]['Tour'] = Y_Live[-1][5]
+        Stat_Live[Player_Precedent]['# Touche/ Tour'] = Y_Live[-1][0]
+        Stat_Live[Player_Precedent]['# de triple'] = Y_Live[-1][1]
+        Stat_Live[Player_Precedent]['# de double'] = Y_Live[-1][2]
+        Stat_Live[Player_Precedent]['# de tour à vide'] = Y_Live[-1][3]
+        Stat_Live[Player_Precedent]['Longest streak'] = Y_Live[-1][4]
 
 
     
@@ -628,7 +628,7 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
 
                 Touche_Total = Touche_Total + Dernier_Tour[i][6] + np.sum(Dernier_Tour[i][5]) / Dernier_Tour[i][3]
 
-    Stat_Live[Player_Turn]['# Touche/ Tour'] = ( Stat_Live[Player_Turn]['# Touche/ Tour'] * ( Dernier_Tour[0][1] -1) + Touche_Total ) / (Dernier_Tour[0][1])
+#    Stat_Live[Player_Turn]['# Touche/ Tour'] = ( Stat_Live[Player_Turn]['# Touche/ Tour'] * ( Dernier_Tour[0][1] -1) + Touche_Total ) / (Dernier_Tour[0][1])
     Stat_Live[Player_Turn]['Tour'] = Turn_Number
 
     

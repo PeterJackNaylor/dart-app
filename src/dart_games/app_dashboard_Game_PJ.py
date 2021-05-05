@@ -197,7 +197,7 @@ def create_ap(app, room_number):
         if clicked_on_refresh: # You clicked the refresh button
             n_clicks_Refresh = 0
             var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live',
-                            'Partie_Live', 'Score', 'Graph_Partie']
+                            'Score', 'Y_Live']
             Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
             
      #   else : # This means the game has already started and we want to extract data from the files

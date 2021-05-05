@@ -107,20 +107,20 @@ def create_ap(app, room_number):
     ### , or when the list of players is changed. It then updates the score accordingly.
 
     @app.callback(
-        Output( 'Dart_Counter','data'),
-        Output( 'cancel_round','n_clicks'),
+        Output('Dart_Counter','data'),
+        Output('cancel_round','n_clicks'),
         Output('Score_Table', 'data'),
-        Output( 'submit_round','n_clicks'),
+        Output('submit_round','n_clicks'),
         Output('basic-interactions', 'clickData'),
         Output('precedent_round', 'n_clicks'),
-        Output( 'Joueur','children'),
+        Output('Joueur','children'),
         Output('Score_Live_New_Way', 'data'),    
         Output('Stat_Live', 'data'),
         Output('Historique_Partie','data'),
-        Output( 'Refresh','n_clicks'),
+        Output('Refresh','n_clicks'),
 
         Input('basic-interactions', 'clickData'),
-        Input( 'Refresh','n_clicks'),
+        Input('Refresh','n_clicks'),
         Input('cancel_round','n_clicks'),
         Input('submit_round','n_clicks'),
         Input('precedent_round','n_clicks'),

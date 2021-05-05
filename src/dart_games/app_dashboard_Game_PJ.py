@@ -37,9 +37,7 @@ from .html_components import (generate_tab_1,
 
 from .styles_dash import tab_style
 
-# mise a jour du tableau df_players
 
-# the end of game criteria takes the data of the next player.
 from .aux import init_db, load_local_dictionnary, load_var #load_local_cricket, 
 
 GAME_NAME = "Bruno"
@@ -185,15 +183,20 @@ def create_ap(app, room_number):
         
         for i in range(len(data_Live_New_Way) ):
             data_Live_New_Way[ i ]['Equipe'] = list(Team_List.keys())[i]
+            data_Live_New_Way[ i ]["index"] = Team_List[list(Team_List.keys())[i]][0]
+            
 
-        var_to_load = ["Turn_Counter", 'data_Historique', 'Stats_Partie',
+
+        var_to_load = ["Turn_Counter", 'data_Historique', 'Stat_Live',
                        'Score_History', 'data_Table', 'Y_Live']
 
         Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
         print("Score history load", Score_History)
+        print('Stat_Live load:',Stat_Live)
+
         if clicked_on_refresh: # You clicked the refresh button
             n_clicks_Refresh = 0
-            var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stats_Partie',
+            var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live',
                             'Partie_Live', 'Score', 'Graph_Partie']
             Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
             
@@ -329,7 +332,7 @@ def create_ap(app, room_number):
             # , 'Partie_Live.npy', 'Score.npy', 'Graph_Partie.npy', 
             # output = load_local_cricket(local_path, data_Table, data_Historique)
             # 'Partie_Historique.npy', 'Partie_Live.npy', 'Score.npy', 'Graph_Partie.npy', 'Stats_Partie.npy'
-            var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stats_Partie']
+            var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live']
             Turn, Score_History, Y_live = load_var(local_path, var_to_load, game_att)
             Team_Number_Game = len(list(Team_List.keys()))
             Team_Turn = Turn % Team_Number_Game    

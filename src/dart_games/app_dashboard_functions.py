@@ -636,6 +636,9 @@ def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live
     Y_Live.append(New_Stats)
    # print('Y_live =', Y_Live)
 
+    print('Stat_Live_Final:',Stat_Live)
+
+
 
     
 
@@ -738,6 +741,8 @@ def submit_score(name, Cricket_Type, data_Live_New_Way, Team_Turn, Next_Player, 
                  Column_Storage, Team_List, Stat_Live, Y_Live, local_path):
     Turn_Number = int(Turn / Team_Number_Game) + 1
     Darts, Coef, data_Live_New_Way, Dart_Number = Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number)
+
+
 
     if name == "Cricket":
         data_Table, Score_History = Score_Update_Cricket(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number ,Score_History, Cricket_Type)

@@ -31,7 +31,7 @@ from .app_dashboard_functions import (discrete_background_color_bins,
                                       Save_Everyone,
                                       End_Game)
 
-from .html_components import cricket_layout
+from .html_components import cricket_layout, generate_tab_1, generate_tab_2, generate_tab_3
 
 from .styles_dash import tab_style
 
@@ -51,6 +51,42 @@ def create_ap(app, room_number):
     local_path = f"ressources/local_games/{GAME_NAME}/{room_number}"
 
     layout = cricket_layout(local_path)
+
+
+    @app.callback(
+        Output('tab-content', 'children'),
+        Input('tabs', 'value'))
+
+
+    def render_content(tab):
+
+        game_att = load_local_dictionnary(local_path, "Cricket")
+
+        init = init_db(game_att)
+        Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats = init[0:4]
+        df_Score_Live_New_Way, df_Score, df_Stat_Live, fig_Stat = init[4:8]
+        df_Score_Storage, legend = init[8:10]
+        
+        if tab == 'tab-main':
+
+            return generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
+                               Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
+                               df_Score_Live_New_Way,
+                               df_Score, tab_style, legend)
+
+          #  return generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
+          #                     Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
+          #                     df_Score_Live_New_Way,
+          #                     df_Score, tab_style, legend)
+
+        elif tab == 'tab-stat':
+            return generate_tab_2(df_Stat_Live, fig_Stat)
+            
+        elif tab == 'tab-historique':
+            return generate_tab_3(df_Score_Storage)
+
+
+
     # Callback called upon whenever you change player or you change the dartnumber. 
     # Puts up to date the display of the score tables
     @app.callback( 
@@ -142,6 +178,7 @@ def create_ap(app, room_number):
                          data_Historique, fig_Stat_Live):#, Y_Live):
 
         # global var
+        print('Im here!!!!!!!')
         game_att = load_local_dictionnary(local_path, "Cricket")
 
         var_to_load = ["Turn_Counter", 'data_Historique', 'Stat_Live',
@@ -165,6 +202,8 @@ def create_ap(app, room_number):
         print('Y_Live load:',Y_Live)
         if clicked_on_refresh: # You clicked the refresh button
             n_clicks_Refresh = 0
+            print('The refresh button has been pushed whuile having dynamic tabs')
+
             Turn, data_Historique, Stat_Live, Score_History, data_Table, Y_Live = load_var(local_path, var_to_load, game_att)
             
         Team_Number_Game = game_att['n_t']
@@ -173,11 +212,14 @@ def create_ap(app, room_number):
         Team_Turn = Turn % Team_Number_Game
         Next_Player = (Turn + 1) % Team_Number_Game
 
-     #   else : # This means the game has already started and we want to extract data from the files
         if (clicked_on_dartboard or # We enter here as soon as you click on the dart board
             clicked_on_canceled or 
             clicked_on_submit or 
             clicked_on_precedent):
+            
+            print('Interaction with dash while having dynamic tabs')
+
+            
             if (clicked_on_dartboard and # We enter here as soon as you click on the dart board
                 not clicked_on_canceled and 
                 not clicked_on_submit and
@@ -268,7 +310,9 @@ def create_ap(app, room_number):
     def Update_Graphs(n_click_Graph, #Input
                       Dropdown_Value, Stat_Live, fig_Stat_Live): #State
 
+
         if n_click_Graph:
+            print('J ai clicke sur le bbouton mise a jour graph')
             n_click_Graph = 0
             game_att = load_local_dictionnary(local_path, "Cricket")
             var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live']

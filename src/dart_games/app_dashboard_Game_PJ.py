@@ -223,12 +223,13 @@ def create_ap(app, room_number):
                     Player_Precedent = (Turn - 1) % Team_Number_Game
                     Turn = Turn - 1 # think about this, maybe not true?
                     data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game, game_att['Team_List'])
-
+                    print("befire", data_Historique)
                     outputs = Remove_Last_Round_New(Team_Number_Game, data_Table, Score_History,
                                                     game_att['Darts_Total'], Player_Precedent,
                                                     game_att['Game'], Turn, data_Historique,
                                                     Stat_Live, fig_Stat_Live, Y_Live)
                     data_Table, Score_History, data_Historique, Stat_Live, fig_Stat_Live, Y_Live = outputs
+                    print("after", data_Historique)
 
             Save_Everyone(local_path, Turn, Score_History, 
                           data_Historique, data_Table, Y_Live, 

@@ -488,7 +488,11 @@ def Remove_Last_Round(Player_Number_Game, data_Table, Score_History, Darts_Total
     return data_Table, Score_History
 
 
-def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_Total, Player_Precedent,Game,Turn_Counter,data_Historique, Stat_Live, fig_Stat_Live,Y_Live):
+def Remove_Last_Round_New(Player_Number_Game, data_Table,
+                          Score_History, Darts_Total,
+                          Player_Precedent, Game, Turn_Counter,
+                          data_Historique, Stat_Live, fig_Stat_Live, 
+                          Y_Live):
     # enlever les contributions au score
     
      # enlever les eventuels degats infliger par les 3 dernieres flechettes.
@@ -523,7 +527,7 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
     fig_Stat_Live['data'][Player_Precedent]['x'].pop(-1) 
     fig_Stat_Live['data'][Player_Precedent]['y'].pop(-1)
 
-    Y_Live.pop(-1)
+    # Y_Live.pop(-1)
     
 
     if Turn_Counter == 0:
@@ -550,9 +554,10 @@ def Remove_Last_Round_New(Player_Number_Game, data_Table, Score_History, Darts_T
 
 #    Stat_Live[Player_Precedent]['Tour'] = fig_Stat_Live['data'][Player_Precedent]['x'][-1]
 #    Stat_Live[Player_Precedent]['# Touche/ Tour'] = fig_Stat_Live['data'][Player_Precedent]['y'][-1]
-
-
-
+    print("turn counter", Turn_Counter)
+    print(Player_Precedent)
+    print(Y_Live)
+    
 
     # remove the last 3 darts from the storage file and the last 3 darts of the historic display
                 

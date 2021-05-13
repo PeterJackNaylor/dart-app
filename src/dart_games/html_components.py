@@ -139,7 +139,7 @@ def generate_tab_2(df_Stat_Live, fig_Stat):
                              id='Button_Graph',
                              n_clicks=0)]
 
-    print(children)
+
     return children    
 #    return dcc.Tab(label='Live_Stats',
 #                   style=tab_style,
@@ -181,6 +181,13 @@ def generate_tab_3(df_Score_Storage):
 #                   selected_style=tab_selected_style,
 #                   children=children)
 
+def generate_tab_4():
+    children = [html.Button('Mise à jour Graphiques',
+                             id='Big_button',
+                             n_clicks=0)]
+    children += [html.Div("no default", id="text")]
+    return children
+
 
 def cricket_layout(local_path):
 
@@ -206,7 +213,8 @@ def cricket_layout(local_path):
                 children=[
                     dcc.Tab(label='Game', value='tab-main',style=tab_style ,selected_style=tab_selected_style),
                     dcc.Tab(label='Tab two', value='tab-stat',style=tab_style ,selected_style=tab_selected_style),
-                    dcc.Tab(label='Tab three', value='tab-historique',style=tab_style ,selected_style=tab_selected_style)
+                    dcc.Tab(label='Tab three', value='tab-historique',style=tab_style ,selected_style=tab_selected_style),
+                    dcc.Tab(label='Tab four', value='tab-example',style=tab_style ,selected_style=tab_selected_style)
                 ]
             ),
             html.Div(id='tab-content')

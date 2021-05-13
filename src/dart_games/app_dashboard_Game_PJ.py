@@ -31,7 +31,7 @@ from .app_dashboard_functions import (discrete_background_color_bins,
                                       Save_Everyone,
                                       End_Game)
 
-from .html_components import cricket_layout, generate_tab_1, generate_tab_2, generate_tab_3
+from .html_components import cricket_layout, generate_tab_1, generate_tab_2, generate_tab_3, generate_tab_4
 
 from .styles_dash import tab_style
 
@@ -50,9 +50,19 @@ def create_ap(app, room_number):
     df_darts = pd.read_csv('ressources/mapping_dart_geojson.csv')
     local_path = f"ressources/local_games/{GAME_NAME}/{room_number}"
 
+    game_att = load_local_dictionnary(local_path, "Cricket")
     layout = cricket_layout(local_path)
-
-
+    init = init_db(game_att)
+    Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats = init[0:4]
+    df_Score_Live_New_Way, df_Score, df_Stat_Live, fig_Stat = init[4:8]
+    df_Score_Storage, legend = init[8:10]
+    
+    tab1 = generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
+                               Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
+                               df_Score_Live_New_Way,
+                               df_Score, tab_style, legend)
+    tab2 = generate_tab_2(df_Stat_Live, fig_Stat)
+    tab3 = generate_tab_3(df_Score_Storage)
     @app.callback(
         Output('tab-content', 'children'),
         Input('tabs', 'value'))
@@ -69,7 +79,7 @@ def create_ap(app, room_number):
         df_Score_Live_New_Way, df_Score, df_Stat_Live, fig_Stat = init[4:8]
         df_Score_Storage, legend = init[8:10]
         
-        if tab == 'tab-main':
+        if tab == 'tab-example':
 
             return generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
                                Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
@@ -82,7 +92,18 @@ def create_ap(app, room_number):
             
         elif tab == 'tab-historique':
             return generate_tab_3(df_Score_Storage)
+        elif tab == 'tab-main':
+            return generate_tab_4()
 
+    @app.callback( 
+        Output("text", 'children'),
+        Input('Big_button', 'n_clicks')
+    )
+    def test(n_click):
+        if n_click:
+            return 'pressed'
+        else:
+            return 'not pressed'
 
 
     # Callback called upon whenever you change player or you change the dartnumber. 

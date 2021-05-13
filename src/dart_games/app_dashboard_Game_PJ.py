@@ -60,6 +60,8 @@ def create_ap(app, room_number):
 
     def render_content(tab):
 
+        print('i m in render content')
+
         game_att = load_local_dictionnary(local_path, "Cricket")
 
         init = init_db(game_att)
@@ -74,10 +76,6 @@ def create_ap(app, room_number):
                                df_Score_Live_New_Way,
                                df_Score, tab_style, legend)
 
-          #  return generate_tab_1(Turn_Counter, Flechette_Compteur, Score_Storage,
-          #                     Y_Live_Stats, game_att['Team_List'], game_att['n_t'], 
-          #                     df_Score_Live_New_Way,
-          #                     df_Score, tab_style, legend)
 
         elif tab == 'tab-stat':
             return generate_tab_2(df_Stat_Live, fig_Stat)
@@ -108,6 +106,8 @@ def create_ap(app, room_number):
                                   # Team_Number_Game, 
                                   data_Historique):
                     # 'Partie_Historique.npy', 'Partie_Live.npy', 'Score.npy', 'Graph_Partie.npy', 'Stats_Partie.npy'
+
+        print('i m in ipdate playerturn display')
         game_att = load_local_dictionnary(local_path, "Cricket")
         var_to_load = ["Turn_Counter"]# , 'Partie_Historique', 'Stats_Partie']
         Turn_Counter = load_var(local_path, var_to_load, game_att)[0]
@@ -178,7 +178,7 @@ def create_ap(app, room_number):
                          data_Historique, fig_Stat_Live):#, Y_Live):
 
         # global var
-        print('Im here!!!!!!!')
+        print('Im in Score_All_In_One!!!!!!!')
         game_att = load_local_dictionnary(local_path, "Cricket")
 
         var_to_load = ["Turn_Counter", 'data_Historique', 'Stat_Live',
@@ -310,13 +310,14 @@ def create_ap(app, room_number):
     def Update_Graphs(n_click_Graph, #Input
                       Dropdown_Value, Stat_Live, fig_Stat_Live): #State
 
-
+        print('i m in update graphs')
+        
         if n_click_Graph:
             print('J ai clicke sur le bbouton mise a jour graph')
             n_click_Graph = 0
             game_att = load_local_dictionnary(local_path, "Cricket")
             var_to_load = ["Turn_Counter", 'Partie_Historique', 'Stat_Live']
-            Turn, Score_History, Y_live = load_var(local_path, var_to_load, game_att)
+            Turn, Score_History, Y_Live = load_var(local_path, var_to_load, game_att)
             Team_Number_Game = game_att['n_t']
             Team_Turn = Turn % Team_Number_Game    
             

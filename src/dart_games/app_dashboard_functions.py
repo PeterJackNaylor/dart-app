@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import numpy as np
 
+from .styles_dash import color_mapping
+
 
 # Function that creates the color scale in the score table
 def map_min_bound(f):
@@ -64,7 +66,6 @@ def discrete_background_color_bins(df, n_bins, columns):
             backgroundColor = 'rgb(50, 50, 50)'
             
 
-
         for column in df_numeric_columns:
             styles.append({
                 'if': {
@@ -99,7 +100,7 @@ def discrete_background_color_bins(df, n_bins, columns):
                             'margin-left' : "15px"}))
 
 
-def Storage_Player_Separation(turn): #,data_Historique,Player_Number_Game):
+def Storage_Player_Separation(turn): 
     if turn > 1:
         style_data_conditional = [
             {
@@ -121,18 +122,7 @@ def Storage_Player_Separation(turn): #,data_Historique,Player_Number_Game):
     return style_data_conditional
 
 
-#    if Turn_Counter % Darts_Total == 0 :
 
- #       New_Turn = {
-   #         'if': {'row_index': Turn_Counter},
-  #          'backgroundColor': 'RebeccaPurple',
-    #        'color': 'white'     
-     #   }
-
-      #  Player_Separation.append([])
-       # Player_Separation[-1] = New_Turn
-
-#    return Player_Separation
 
 def Which_Line (Turn_Counter_Index, data_Live_New_Way, Dart_Number):
 
@@ -142,19 +132,19 @@ def Which_Line (Turn_Counter_Index, data_Live_New_Way, Dart_Number):
             },
             {
             'if': {'row_index': Turn_Counter_Index},
-             'backgroundColor': 'rgb(250, 200, 250)',
+             'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']+'Light'],
             'fontWeight': 'bold'
             },
             {
             'if': {'column_id' : list(data_Live_New_Way[Turn_Counter_Index])[2*Dart_Number + 1],
                    'row_index': Turn_Counter_Index},
-            'backgroundColor': 'RebeccaPurple',
+            'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']],
             'color': 'white'
                     },
             {
             'if': {'column_id' : list(data_Live_New_Way[Turn_Counter_Index])[2*Dart_Number + 2],
                    'row_index': Turn_Counter_Index},
-            'backgroundColor': 'RebeccaPurple',
+            'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']],
             'color': 'white'
                     }]
     
@@ -179,7 +169,7 @@ def Douze_Turn(Game,Turn) :
 def Open_Or_Closed (name, Team_Number_Game,
                     data_Table, Turn_Counter_Index):
     if name == "Cricket":
-        Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
+        Game = ['20', '19', '18', '17', '16', '15', 'Bull']#, 'Score', 'Delta']
     Number_Open_Close = [None,None ,None ,None ,None ,None ,None  ] # doesn't do anything for the total Score    
 
     for j in range (0, len(Number_Open_Close) ):       
@@ -300,7 +290,11 @@ def Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number) :
     return Darts, Coef , data_Live_New_Way, Dart_Number
 
 
-def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_Game,Dart_Number,Score_History, Cricket_Type):
+def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_Game,Dart_Number,
+#                Score_History,
+                 Cricket_Type):
+
+    DartRound_Data = []
 
     Degats = [[0 for j in range (0,Team_Number_Game)] for i in range(0,len(Darts))]
 
@@ -385,16 +379,22 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
 
                 data_Table[Team_Turn][value_string] = 3  # (Needs to be after the for loop!)
             
-      #  print('Degats:')
-      #  print(Degats[j])
+        
+        ### Calculate the distance in score to the leading score
+     
+        #Score_min = min(data_Table[i]['Score'] for i in range(Team_Number_Game))
+        for i in range(Team_Number_Game):
+            data_Table[i]['Delta'] = data_Table[i]['Score'] - data_Table[Team_Turn]['Score']
 
-        Score_History.append([Team_Turn, Turn+1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
+        DartRound_Data.append([Team_Turn, Turn+1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
+        
+
+    return data_Table, DartRound_Data
 
 
-    return data_Table, Score_History
+def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, Team_Number_Game,Dart_Number, Douze):
 
-
-def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, Team_Number_Game,Dart_Number,Score_History, Douze):
+    DartRound_Data= []
 
     Degats =  [[0 for i  in range(0,Team_Number_Game)] for j in range (0,len(Darts)) ]
 
@@ -441,135 +441,59 @@ def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, T
                 Degats[j][Team_Turn] =  Degats[j][Team_Turn] + Darts[j] * Coef[j]
                 Fleche_qui_Ferme[j] = Coef[j]
 
-        
-   # print('Fleche qui ferme : ')
-   # print(Fleche_qui_Ferme)
 
     data_Table[Team_Turn]['Score'] = round(Factor * data_Table[Team_Turn]['Score'] + Degats[0][Team_Turn]+ Degats[1][Team_Turn]+ Degats[2][Team_Turn])
 
     for j in range (0, len(Darts) ): # save each dart
 
-        Score_History.append([Team_Turn,Turn_Counter_Index + 1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
+        DartRound_Data.append([Team_Turn,Turn_Counter_Index + 1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
  
-   # print(Score_History)
 
-    return data_Table, Score_History
-
+    return data_Table, DartRound_Data
 
 
-def Remove_Last_Round(Player_Number_Game, data_Table, Score_History, Darts_Total, Player_Precedent):
-     # enlever les eventuels degats infliger par les 3 dernieres flechettes.
-    for i in range (0, Player_Number_Game):
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-1][5][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-2][5][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-3][5][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur
-                    
-                
-    # enlever les touches obtenus par le joueur precedent sur ses 3 dernieres flechettes.
-    for i in range (0, Darts_Total ):
-        if Score_History[-i-1][3] >= 15:
-                        
-            if Score_History[-i-1][3] == 25 :
-                value_Precedent_Dart_string = 'Bull'        
-            else : 
-                value_Precedent_Dart_string = str(int(Score_History[-i-1][3])) 
-                        
-            data_Table[Player_Precedent][value_Precedent_Dart_string] = data_Table[Player_Precedent][value_Precedent_Dart_string] - Score_History[-i-1][6]
-                
-                
-                
-    # remove the last 3 darts from the storage file and the last 3 darts of the historic display
-                
-    del(Score_History[-1]) 
-    del(Score_History[-1])
-    del(Score_History[-1])
-    
-
-    return data_Table, Score_History
 
 
 def Remove_Last_Round_New(Player_Number_Game, data_Table,
-                          Score_History, Darts_Total,
+                          Darts_Total,
                           Player_Precedent, Game, Turn_Counter,
-                          data_Historique, Stat_Live, fig_Stat_Live, 
-                          Y_Live):
+                          data_Historique  
+                         ):
     # enlever les contributions au score
+
     
      # enlever les eventuels degats infliger par les 3 dernieres flechettes.
     for i in range (0, Player_Number_Game):
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-1][5][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-2][5][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - Score_History[-3][5][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
+        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-1]['Dégats'][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
+        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-2]['Dégats'][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
+        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-3]['Dégats'][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
                 
     # enlever les touches obtenus par le joueur precedent sur ses 3 dernieres flechettes.
     for i in range (0, Darts_Total ):
-        if Score_History[-i-1][6] > 0:
+        if data_Historique[-i-1]['Ferme le chiffre'] > 0:
                         
-            if Score_History[-i-1][3] == 25 :
+            if data_Historique[-i-1]['Valeur'] == 25 :
                 value_Precedent_Dart_string = 'Bull'  
             elif Game[Turn_Counter] == 'Double' :
                 value_Precedent_Dart_string = 'Double'
             elif Game[Turn_Counter] == 'Triple':
                 value_Precedent_Dart_string = 'Triple'      
             else : 
-                value_Precedent_Dart_string = str(int(Score_History[-i-1][3])) 
+                value_Precedent_Dart_string = str(int(data_Historique[-i-1]['Valeur'])) 
                         
-            data_Table[Player_Precedent][value_Precedent_Dart_string] = data_Table[Player_Precedent][value_Precedent_Dart_string] - Score_History[-i-1][6]
+            data_Table[Player_Precedent][value_Precedent_Dart_string] = data_Table[Player_Precedent][value_Precedent_Dart_string] - data_Historique[-i-1]['Ferme le chiffre']
                 
-    if Game == ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score'] and  Score_History[-0-1][6] == 0  and  Score_History[-1-1][6] == 0 and  Score_History[-2-1][6] == 0   :     
+    if Game == ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score'] and  data_Historique[-0-1]['Ferme le chiffre'] == 0  and  data_Historique[-1-1]['Ferme le chiffre'] == 0 and  data_Historique[-2-1]['Ferme le chiffre'] == 0   :     
     
         data_Table[Player_Precedent]['Score'] = data_Table[Player_Precedent]['Score'] * 2
 
 
-#enlever les contributions au stats
-
-
-    fig_Stat_Live['data'][Player_Precedent]['x'].pop(-1) 
-    fig_Stat_Live['data'][Player_Precedent]['y'].pop(-1)
-
-    # Y_Live.pop(-1)
-    
-
-    if Turn_Counter == 0:
-        Stat_Live[Player_Precedent]['Tour'] = 0
-        Stat_Live[Player_Precedent]['# Touche/ Tour'] = 0
-        Stat_Live[Player_Precedent]['# de triple'] = 0
-        Stat_Live[Player_Precedent]['# de double'] = 0
-        Stat_Live[Player_Precedent]['# de tour à vide'] = 0
-        Stat_Live[Player_Precedent]['Longest streak'] = 0
-    else:
-        Stat_Live[Player_Precedent]['Tour'] = Y_Live[-1][5]
-        Stat_Live[Player_Precedent]['# Touche/ Tour'] = Y_Live[-1][0]
-        Stat_Live[Player_Precedent]['# de triple'] = Y_Live[-1][1]
-        Stat_Live[Player_Precedent]['# de double'] = Y_Live[-1][2]
-        Stat_Live[Player_Precedent]['# de tour à vide'] = Y_Live[-1][3]
-        Stat_Live[Player_Precedent]['Longest streak'] = Y_Live[-1][4]
-
-
-    
-
-
-
-
-
-#    Stat_Live[Player_Precedent]['Tour'] = fig_Stat_Live['data'][Player_Precedent]['x'][-1]
-#    Stat_Live[Player_Precedent]['# Touche/ Tour'] = fig_Stat_Live['data'][Player_Precedent]['y'][-1]
-    print("turn counter", Turn_Counter)
-    print(Player_Precedent)
-    print(Y_Live)
-    
-
-    # remove the last 3 darts from the storage file and the last 3 darts of the historic display
-                
-    del(Score_History[-1]) 
-    del(Score_History[-1])
-    del(Score_History[-1])
-
     del(data_Historique[-1])
     del(data_Historique[-1])
     del(data_Historique[-1])
 
-    return data_Table, Score_History, data_Historique, Stat_Live, fig_Stat_Live, Y_Live
+    return (data_Table, data_Historique)
+  
 
 def Get_Click_Data(clickData,df_darts,Dart_Number,data_Live_New_Way, Player_Turn, Darts_Total) :
     click_Location = clickData['points'][0]['location']
@@ -600,131 +524,106 @@ def Get_Click_Data(clickData,df_darts,Dart_Number,data_Live_New_Way, Player_Turn
 
     return clickData, Dart_Number, data_Live_New_Way
 
+def Get_Stats(data_Historique,Stats_Table,Team_List,Stats_Graph,Dropdown_Value):
 
-def Update_Live_Stats(Darts_Total,Score_History,Player_Turn,Team_List, Stat_Live, Turn, Y_Live):#,fig_Stat_Live,Dropdown_Value,Y_Live,Column_Live_Stats_Graph):
-    Dernier_Tour = []
-    Player_Number_Game = len(Team_List)
-    Turn_Number = int(Turn / Player_Number_Game) + 1
+ 
 
-    for i in range(0, Darts_Total):
-        Dernier_Tour.append(Score_History[-i-1] )
+    X = [ [j+1  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+    Y = [ [None  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+
+    N_Touche = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+    Hover_Data_Fleche1 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+    Hover_Data_Fleche2 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+    Hover_Data_Fleche3 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+
+
+
+    for i in range (0, int( len(data_Historique) / 3) ): # Analysing the 3 darts of the turn in one go
+
+        Player_Turn = list(Team_List.keys()).index(data_Historique[ 3*i ]['Player'])
+
+
+        if ( (data_Historique[ 3*i + 0 ]['Ferme le chiffre'] 
+            + data_Historique[ 3*i + 1 ]['Ferme le chiffre']
+            + data_Historique[ 3*i + 2 ]['Ferme le chiffre'] == 0) 
+            and
+             (np.sum(data_Historique[ 3*i + 0 ]['Dégats']) 
+            + np.sum(data_Historique[ 3*i + 1 ]['Dégats'])
+            + np.sum(data_Historique[ 3*i + 2 ]['Dégats']) == 0) ): # si tour à vide
+
+            Stats_Table[Player_Turn]['# de tour à vide'] = Stats_Table[Player_Turn]['# de tour à vide'] + 1
+
+        else :
+                for j in range (0, 3):
+                    
+                    if j == 0:
+                        Hover_Data_Fleche1[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
+                    elif j ==1:
+                        Hover_Data_Fleche2[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
+                    elif j ==2:
+                        Hover_Data_Fleche3[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
+
+
+
+
+                    if ( (data_Historique[ 3*i + j ]['Coef'] == 3) and 
+                        (data_Historique[ 3*i + j ]['Dégats'] != 0 or data_Historique[ 3*i + j ]['Ferme le chiffre'] != 0) ):
+                    # la flechette est un triple et il a compté (meme partiellement)
+                        Stats_Table[Player_Turn]['# de triple'] = Stats_Table[Player_Turn]['# de triple'] + 1
+
+                    if ( (data_Historique[ 3*i + j ]['Coef'] == 2) and 
+                        (data_Historique[ 3*i + j ]['Dégats'] != 0 or data_Historique[ 3*i + j ]['Ferme le chiffre'] != 0)
+                        and data_Historique[ 3*i + j ]['Valeur'] != 25 ):
+                    # la flechette est un double (mais pas un bull) et il a compté (meme partiellement)
+                        Stats_Table[Player_Turn]['# de double'] = Stats_Table[Player_Turn]['# de double'] + 1
+
+                    if( data_Historique[ 3*i + j ]['Valeur'] != 0):
+                        
+#                        N_Touche = N_Touche + data_Historique[ 3*i + j ]['Ferme le chiffre']  + np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
+                        N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1 ] = N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1] + data_Historique[ 3*i + j ]['Ferme le chiffre']  + np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
+                
+        N_Touche_Tot= np.sum(N_Touche[Player_Turn]) # = au nombre de touche total pour cette equipe
         
-
-
-    Touche_Total = 0
-    print('Dernier Tour', Dernier_Tour)
-
-    if (Dernier_Tour[0][6] + Dernier_Tour[1][6] + Dernier_Tour[2][6] == 0) and (np.sum(Dernier_Tour[0][5]) + np.sum(Dernier_Tour[1][5]) + np.sum(Dernier_Tour[2][5]) == 0 ):
-        Stat_Live[Player_Turn]['# de tour à vide'] = Stat_Live[Player_Turn]['# de tour à vide'] + 1
-            
-
-    else:
-        for i in range(0, Darts_Total):
-            if (Dernier_Tour[i][6] != 0) or (np.sum(Dernier_Tour[i][5]) != 0):
-                if Dernier_Tour[i][4] == 3:
-                    Stat_Live[Player_Turn]['# de triple'] = Stat_Live[Player_Turn]['# de triple'] + 1
-                elif Dernier_Tour[i][4] == 2:
-                    Stat_Live[Player_Turn]['# de double'] = Stat_Live[Player_Turn]['# de double'] + 1
-
-                Touche_Total = Touche_Total + Dernier_Tour[i][6] + np.sum(Dernier_Tour[i][5]) / Dernier_Tour[i][3]
-
-    Stat_Live[Player_Turn]['# Touche/ Tour'] = ( Stat_Live[Player_Turn]['# Touche/ Tour'] * ( Dernier_Tour[0][1] -1) + Touche_Total ) / (Dernier_Tour[0][1])
-    Stat_Live[Player_Turn]['Tour'] = Turn_Number
-
-    
-    New_Stats = [Stat_Live[Player_Turn][i] for i in Stat_Live[Player_Turn]]
-    Y_Live.append(New_Stats)
-
- #   for i in range (0, len( Y_Live)) :
- #       for j in range (0, len(Y_Live[i])-1): 
- #           Y_Live[i][j]= float(Y_Live[i][j])
-
-    print('Y_live =', Y_Live)
-
-
-    
-
-
-############    fig_Stat_Live['data'][0]['hovertemplate'] = 'color=A<br>Tour=%{x}<br># Touche/ Tour=%{y}<extra></extra>'
-
-
-
-
-    return Stat_Live, Y_Live
-
-
-
-def Update_Live_Graph(Stat_Live,Player_Turn,Team_List, Y_Live,fig_Stat_Live, Dropdown_Value, Column_Live_Stats_Graph,Score_History):
-
-    Player_Number_Game = len(Team_List)
-
-
-#    print('Updating graph')
-#    print('Stat_Live', Stat_Live[Player_Turn])
-    X = [[] for i in range (0, Player_Number_Game)]
-    Y = [[] for i in range (0, Player_Number_Game)]
-
-    for j in range(len(Y_Live)):
-
- #       if Y_Live[j][5] == 0:
-  #          Y_Live.remove(Y_Live[j])
-   #         continue
-#   ###         Y[i].remove(Y[i][0])
-
-#        print('Y_Live =', Y_Live)
-        X[(j+1) % Player_Number_Game].append(Y_Live[j][5])
-        Y[(j+1) % Player_Number_Game].append(Y_Live[j][Dropdown_Value])
+#        Stats_Table[Player_Turn]['# Touche/ Tour'] = ( Stats_Table[Player_Turn]['# Touche/ Tour'] * ( data_Historique[ 3*i ]['Tour'] -1) + N_Touche ) / (data_Historique[ 3*i ]['Tour'])
+        Stats_Table[Player_Turn]['# Touche/ Tour'] =  N_Touche_Tot  / (data_Historique[ 3*i ]['Tour'])
 
         
-    for i in range(Player_Number_Game):
-        if X[i][0] == 0:
-            X[i].remove(X[i][0])
-            Y[i].remove(Y[i][0])
+        Y[Player_Turn][ data_Historique[ 3*i  ]['Tour'] -1  ] = Stats_Table[Player_Turn][Dropdown_Value]
 
-
-#        print('Player:', Team_List[i])
-        fig_Stat_Live['data'][i]['x'] = X[i]
-        fig_Stat_Live['data'][i]['y'] = Y[i]
     
-
-#    print(fig_Stat_Live)
-   # print('Y_Live =', Y_Live)
- #   X_Max =   float(max(max( x) for x in X ))
-  #  Y_Max =   float(max(max( x) for x in Y ))
-    fig_Stat_Live['layout']['yaxis']['title']['text'] = Column_Live_Stats_Graph[Dropdown_Value]
-    X_Max =   max(max( float(x)) for x in X )
-    Y_Max =   max(max( float(x)) for x in Y )
-    fig_Stat_Live['layout']['xaxis']['domain'] = [0.0, X_Max + 1]
-    fig_Stat_Live['layout']['yaxis']['domain'] = [0.0, Y_Max + 0.5]     
- #   print('X:', X)
- #   print('Y:', Y)
-
-    for i in range (0, Player_Number_Game):
-        fig_Stat_Live['data'][i].update(mode='markers+lines', hovertemplate =f'<b>Fleche 1:{Score_History[-3][3]:.0f}</b><br>Fleche 2:{Score_History[-2][3]:.3f} <br>Fleche3:{Score_History[-1][3]:.3f} ')
-        #fig_Stat_Live['data'][i].update_traces(mode="markers+lines", hovertemplate=None)
-
-  #      print('Score History:', Score_History[-1])
-
-    return fig_Stat_Live
+    Stats_Graph['layout']['yaxis']['title']['text'] = Dropdown_Value
 
 
+    for i in range (0,len(list(Team_List.keys()))):
 
+        Stats_Graph['data'][i]['x'] = X[i]  
+        Stats_Graph['data'][i]['y'] = Y[i]
+
+        N_Touche_array = np.array(N_Touche[i])
+        N_Touche_array_Rescaled = (N_Touche_array+1) *10
+        Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle', 'size':N_Touche_array_Rescaled})
+
+#        print('data historique i:',data_Historique[i])
+#        Stats_Graph.data[i].update( hovertemplate =f'<b>Fleche 1:{data_Historique[i][3]:.0f}</b><br>Fleche 2:{Score_History[-2][3]:.3f} <br>Fleche3:{Score_History[-1][3]:.3f} ')
+        
+        print('Hover Data :',Hover_Data_Fleche1)
+     #   Stats_Graph.data[i].update( hovertemplate = "Col1: %{Hover_Data_Fleche1[i]}") #, "Col2: %{customdata[1]}", "Col3: %{customdata[2]}")
+
+        Stats_Graph.data[i].update( hovertemplate =f'<b>Fleche 1:{Hover_Data_Fleche1[i][0]:.0f} ')
+
+    print('data historique :',data_Historique)
+
+    return Stats_Table, Stats_Graph
 
 
 
 def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
-    # print("start", data_Live_New_Way)
+
     Number_Of_Players = len(Team_List[ list(Team_List.keys())[Turn % Team_Number_Game] ])
     Team_Turn = list(Team_List.keys())[Turn % Team_Number_Game]
-  #  Player_Turn = Team_List[Turn % Team_Number_Game][1][ int(Turn / Team_Number_Game) %  Number_Of_Players ]
     Player_Turn = Team_List[Team_Turn][int(Turn / Team_Number_Game) %  Number_Of_Players]
-    # print(list(Team_List.keys())[Turn % Team_Number_Game])
-    # print(int(Turn / Team_Number_Game))
-    # print(Number_Of_Players)
-    # print(int(Turn / Team_Number_Game) %  Number_Of_Players)
-    # print("data_Live_new_way", data_Live_New_Way)
+    
     data_Live_New_Way[Turn % Team_Number_Game]['index'] = Player_Turn
-    # print("end", data_Live_New_Way)
 
     return data_Live_New_Way
 
@@ -741,34 +640,27 @@ def Number_Open_Close_f(name, Team_Number_Game, data_Table, Turn_Counter_Index, 
     return Number_Open_Close
 
 def submit_score(name, Cricket_Type, data_Live_New_Way, Team_Turn, Next_Player, Dart_Number,
-                 Turn, Team_Number_Game, data_Table, Score_History, Darts_Total, data_Historique,
-                 Column_Storage, Team_List, Stat_Live, Y_Live, local_path):
+                 Turn, Team_Number_Game, data_Table, Darts_Total, data_Historique,
+                 Column_Storage, Team_List, local_path):
+
     Turn_Number = int(Turn / Team_Number_Game) + 1
     Darts, Coef, data_Live_New_Way, Dart_Number = Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number)
 
 
 
     if name == "Cricket":
-        data_Table, Score_History = Score_Update_Cricket(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number ,Score_History, Cricket_Type)
+        data_Table, DartRound_Data = Score_Update_Cricket(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number , Cricket_Type)
 
     elif name == "Douze":
         Douze = ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score']
-        data_Table, Score_History = Score_Update_Douze(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number, Score_History, Douze)
+        data_Table, DartRound_Data = Score_Update_Douze(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number,  Douze)
 
     
     for i in range(Darts_Total):
-        data_Historique.append( {Column_Storage[j]:Score_History[-3+i][j] for j in range(len(Column_Storage))})
-        data_Historique[-1][Column_Storage[5]] = np.sum(Score_History[-3+i][5])  
+        data_Historique.append( {Column_Storage[j]:DartRound_Data[i][j] for j in range(len(Column_Storage))})
+    #########    data_Historique[-1][Column_Storage[5]] = np.sum(DartRound_Data[i][5])  
 #     data_Historique[-1][Column_Storage[0]] = Team_List[Score_History[-3+i][0]]  
-        data_Historique[-1][Column_Storage[0]] = list(Team_List.keys())[Score_History[-3+i][0]]  
-
-    Stat_Live, Y_Live = Update_Live_Stats(Darts_Total,
-                                          Score_History,
-                                          int(Team_Turn), 
-                                          list(Team_List.keys()),
-                                          Stat_Live, 
-                                          Turn, 
-                                          Y_Live)
+        data_Historique[-1][Column_Storage[0]] = list(Team_List.keys())[DartRound_Data[i][0]]  
 
     
     Turn = Turn + 1 # change index for next player
@@ -776,9 +668,9 @@ def submit_score(name, Cricket_Type, data_Live_New_Way, Team_Turn, Next_Player, 
     data_Live_New_Way = Update_Live_Player(data_Live_New_Way, Turn, 
                                            Team_Number_Game , Team_List)
 
-    Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live)
+    Save_Everyone(local_path,Turn,data_Historique,data_Table)
 
-    return data_Live_New_Way, Stat_Live, Y_Live, Turn, data_Historique, data_Table, Score_History
+    return data_Live_New_Way, Turn, data_Historique, data_Table, 
     
                 
         
@@ -824,14 +716,13 @@ def End_Game(data_Table,
                 Partie_Joueur.to_csv('{}.csv'.format(list(Team_List.keys())[i]),index = False)
 
 
-def Save_Everyone(local_path,Turn,Score_History,data_Historique,data_Table,Y_Live,Stat_Live):
+def Save_Everyone(local_path,Turn,data_Historique,data_Table):
 
     f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
     f1.write(str(Turn))
     f1.close()
 
-    np.save(os.path.join(local_path, 'Score_History.npy'), Score_History)
+
     np.save(os.path.join(local_path, 'data_Historique.npy'), data_Historique)
+
     np.save(os.path.join(local_path, 'data_Table.npy'), data_Table)
-    np.save(os.path.join(local_path, 'Y_Live.npy'), Y_Live)
-    np.save(os.path.join(local_path, 'Stat_Live.npy'), Stat_Live)

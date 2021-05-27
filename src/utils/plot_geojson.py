@@ -10,8 +10,16 @@ def dart_plot():
         geo_darts = json.loads(f.read())
 
     fig = px.choropleth(df_darts, geojson=geo_darts, color="color",
-                        locations="id", featureidkey="properties.id"
+                        locations="id", featureidkey="properties.id", hover_data={ 'id' : False, 'value': ':.2d', 'coef': ':.2d', 'color' : False }
+
                     )
     fig.update_geos(fitbounds="locations", visible=False)
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(coloraxis_showscale=False)
+
     return fig
+
+
+
+
+#hover_data=[df_darts["value"], df_darts["coef"]]

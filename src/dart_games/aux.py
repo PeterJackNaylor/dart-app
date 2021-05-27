@@ -7,6 +7,9 @@ import plotly.express as px
 from .app_dashboard_functions import discrete_background_color_bins
 from ..utils.pickle import open_dic
 
+from .styles_dash import color_mapping
+
+
 
 Column_Storage = ['Player',
                   'Tour',
@@ -20,7 +23,7 @@ Column_Live_Stats = ['# Touche/ Tour',
                      '# de triple',
                      '# de double',
                      '# de tour à vide',
-                     'Longest streak',
+                     '# Degats/ Tour',
                      'Tour']
 
 
@@ -28,7 +31,7 @@ Column_Live_Stats_Graph = ['# Touche/ Tour',
                            '# de triple',
                            '# de double',
                            '# de tour à vide',
-                           'Longest streak',
+                           '# Degats/ Tour',
                            'Tour',
                            'Player']
 
@@ -60,9 +63,15 @@ def init_db(att):
                                 columns=Column_Live_Stats)
     df_Stat_Live["index"] = list(Team_List.keys())
 
-    df_Score_Storage = pd.DataFrame(columns=Column_Storage)
+    Stats_Table = df_Stat_Live.to_dict('records')
+
+
+    data_Historique = pd.DataFrame(columns=Column_Storage).to_dict('records')
+
+
+
     df_Graph_Live = init_stat_live(n_t, Team_List) 
-    fig_Stat = px.scatter(df_Graph_Live,
+    Stats_Graph = px.scatter(df_Graph_Live,
                           x="Tour",
                           y="# Touche/ Tour",
                           color=list(Team_List.keys()),
@@ -70,12 +79,15 @@ def init_db(att):
     Y_Live_Stats = [[0] * len(Column_Live_Stats_Graph)]
 
     for i in range(n_t):
-        fig_Stat.data[i].update(mode='markers+lines')
+        Stats_Graph.data[i].update(mode='markers+lines')
+        Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle'})
+
+    Stats_Graph.layout.update(legend={'title': {'text':'Equipe'}, 'tracegroupgap': 0})
 
 
 
-    (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-1])
-    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, df_Stat_Live, fig_Stat, df_Score_Storage, legend
+    (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-2])
+    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, Stats_Table, Stats_Graph, data_Historique, legend
 
 
 def init_stat_live(n, teams):
@@ -109,7 +121,7 @@ def init_df_live(att):
 def load_local_dictionnary(local_path, name):
     Darts_Total = 3
     if name == "Cricket":
-        Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score']
+        Game = ['20', '19', '18', '17', '16', '15', 'Bull', 'Score','Delta']
     elif name == "Douze":
         Game = ["12"]
     if os.path.isdir(local_path):
@@ -173,10 +185,7 @@ def load_var(local_path, list_variables, att):
                 f = np.load(os.path.join(local_path, name + ".npy"), allow_pickle=True)
                 item = f.tolist()
             else:
-                if name == 'Stat_Live':
-                    item = init_stat_live(att['n_t'], att['Team_List'])
-                    item = item.to_dict("records")
-                elif name == "data_Table":
+                if  name == "data_Table":
                     item = init_df_score(att['n_t'], att["Game"], att['Team_List']).to_dict("records")
                 else:
                     item = []

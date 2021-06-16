@@ -17,13 +17,13 @@ from .styles_dash import (align_style,
                           style_data_conditional,
                           style_data_cond_historic)
 
-
+from .app_dashboard_functions import Save_Everyone
 
 
 
 def generate_tab_1(turn_n,
                  dart_n,
-                 df_score_live, df_score,# df_Stat_Live,
+                 data_Fleches_Temp, Score_Table,# df_Stat_Live,
                 legend):
 
     children = []
@@ -72,7 +72,7 @@ def generate_tab_1(turn_n,
     
     live_score_table = dash_table.DataTable(id='Score_Live_New_Way',
                                             columns=first_dash_table,
-                                            data= df_score_live.to_dict('records'),
+                                            data= data_Fleches_Temp,
                                             style_cell=align_style,
                                             style_table=style_table,
                                             style_data_conditional=style_data_conditional(turn_n),
@@ -84,8 +84,9 @@ def generate_tab_1(turn_n,
     
     current_score_table = dash_table.DataTable(
                                 id='Score_Table',
-                                columns=[{"name": i, "id": i} for i in df_score.columns],
-                                data=df_score.to_dict('records'),
+                             #   columns=[{"name": i, "id": i} for i in df_score.columns],
+                                columns=[{"name": i, "id": i} for i in list( Score_Table[0].keys() )  ],
+                                data= Score_Table,
                                 style_cell=align_style,
                                 style_table=score_style_table,
                                 # style_data_conditional=styles,
@@ -119,6 +120,16 @@ def generate_tab_2(Stats_Table, Stats_Graph):
 
     
     children = []
+
+    children += [ dcc.RadioItems(   id= 'Stat_RadioItems',
+                                    options=[
+                                                {'label': 'Equipe', 'value': 'Stat_Equipe'},
+                                                {'label': 'Individuelle', 'value': 'Stat_Indiv'}
+                                            ],
+                                    value='Stat_Equipe',
+                                    labelStyle={'display': 'inline-block'}
+                                )
+                ]  
 
     children += [dash_table.DataTable(
                         id='Stat_Table',
@@ -165,18 +176,34 @@ def generate_tab_3(data_Historique,Team_List):
     style_data_cond = style_data_cond_historic(Team_List)
 
     children = []
+
+    children += [html.Button('Confirmer Modification',
+                              id='Modification_Historique',
+                              n_clicks=0)]
+    
     children += [dash_table.DataTable(
                         id='Historique_Partie',
-                        columns=[{"name": i, "id": i} for i in Column_Storage],
+                        columns=[{"name": i, "id": i, "editable": Editable(i), "type": which_type(i) } for i in Column_Storage],
                         style_cell={'textAlign': 'center'},
                         style_table=style_table,
                         style_data_conditional= style_data_cond,
                         style_header=style_header,
                         data=data_Historique,
+                    #    editable= True,
                 )]
+
 
     return children
 
+def Editable(i):
+    if i == 'Valeur' or i == 'Coef':
+        return True
+    return False
+
+def which_type(i):
+    if i == 'Equipe' :
+        return 'any'
+    return 'numeric'
 
 
 def cricket_layout(local_path):

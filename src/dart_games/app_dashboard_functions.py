@@ -7,6 +7,8 @@ import numpy as np
 from .styles_dash import color_mapping
 
 
+
+
 # Function that creates the color scale in the score table
 def map_min_bound(f):
     if f == 0.0:
@@ -124,7 +126,7 @@ def Storage_Player_Separation(turn):
 
 
 
-def Which_Line (Turn_Counter_Index, data_Live_New_Way, Dart_Number):
+def Which_Line (Turn_Counter_Index, data_Fleches_Temp, Dart_Number):
 
     Player_Line = [{
             'if': {'row_index': 'odd'},
@@ -132,19 +134,19 @@ def Which_Line (Turn_Counter_Index, data_Live_New_Way, Dart_Number):
             },
             {
             'if': {'row_index': Turn_Counter_Index},
-             'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']+'Light'],
+             'backgroundColor': color_mapping[data_Fleches_Temp[Turn_Counter_Index]['Equipe']+'Light'],
             'fontWeight': 'bold'
             },
             {
-            'if': {'column_id' : list(data_Live_New_Way[Turn_Counter_Index])[2*Dart_Number + 1],
+            'if': {'column_id' : list(data_Fleches_Temp[Turn_Counter_Index])[2*Dart_Number + 1],
                    'row_index': Turn_Counter_Index},
-            'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']],
+            'backgroundColor': color_mapping[data_Fleches_Temp[Turn_Counter_Index]['Equipe']],
             'color': 'white'
                     },
             {
-            'if': {'column_id' : list(data_Live_New_Way[Turn_Counter_Index])[2*Dart_Number + 2],
+            'if': {'column_id' : list(data_Fleches_Temp[Turn_Counter_Index])[2*Dart_Number + 2],
                    'row_index': Turn_Counter_Index},
-            'backgroundColor': color_mapping[data_Live_New_Way[Turn_Counter_Index]['Equipe']],
+            'backgroundColor': color_mapping[data_Fleches_Temp[Turn_Counter_Index]['Equipe']],
             'color': 'white'
                     }]
     
@@ -167,7 +169,7 @@ def Douze_Turn(Game,Turn) :
 
 
 def Open_Or_Closed (name, Team_Number_Game,
-                    data_Table, Turn_Counter_Index):
+                    Score_Table, Turn_Counter_Index):
     if name == "Cricket":
         Game = ['20', '19', '18', '17', '16', '15', 'Bull']#, 'Score', 'Delta']
     Number_Open_Close = [None,None ,None ,None ,None ,None ,None  ] # doesn't do anything for the total Score    
@@ -179,7 +181,7 @@ def Open_Or_Closed (name, Team_Number_Game,
     
         
         for i in range (0, Team_Number_Game):       
-            if data_Table[i][Game[j]] == 3:           
+            if Score_Table[i][Game[j]] == 3:           
                 Compteur_Fermer = Compteur_Fermer + 1           
         
         if Compteur_Fermer == Team_Number_Game: # Tout le monde a fermer
@@ -198,7 +200,7 @@ def Open_Or_Closed (name, Team_Number_Game,
                     'fontWeight': 'bold'                        }
                                
         else: # au moins une personne a fermé           
-            if data_Table[Turn_Counter_Index][Game[j]] == 3: # celui qui est en train de jouer a fermé, il peut donc marquer des points 
+            if Score_Table[Turn_Counter_Index][Game[j]] == 3: # celui qui est en train de jouer a fermé, il peut donc marquer des points 
                       
                 Number_Open_Close[j] = {
                         'if': {'column_id' : Game[j] },
@@ -217,58 +219,45 @@ def Open_Or_Closed (name, Team_Number_Game,
     return Number_Open_Close
 
 
-def Tables_Up_to_Date(Team_List,Score_Live,Score_Init, Game):
-        
-    data_Live_New_Way = pd.DataFrame(np.array([Score_Live for i in range (0, len(Team_List))]), columns=['Fleche 1','Coef 1', 'Fleche 2','Coef 2', 'Fleche 3','Coef 3'], index= Player_List)
-    data_Live_New_Way = data_Live_New_Way.reset_index()
-    data_Live_New_Way = data_Live_New_Way.to_dict('records')
-        
-        
-    data_Table = pd.DataFrame(np.array([Score_Init for i in range (0, len(Team_List))]), columns=Game, index= Team_List)         
-    data_Table = data_Table.reset_index()
-    data_Table = data_Table.to_dict('records')
 
-    return (data_Live_New_Way, data_Table)
-
-
-def Cancel_Button(data_Live_New_Way, Team_Turn):
+def Cancel_Button(data_Fleches_Temp, Team_Turn):
 
         
-    data_Live_New_Way[Team_Turn]['Fleche 1'] = None
-    data_Live_New_Way[Team_Turn]['Fleche 2'] = None
-    data_Live_New_Way[Team_Turn]['Fleche 3'] = None
-    data_Live_New_Way[Team_Turn]['Coef 1'] = None
-    data_Live_New_Way[Team_Turn]['Coef 2'] = None
-    data_Live_New_Way[Team_Turn]['Coef 3'] = None
+    data_Fleches_Temp[Team_Turn]['Fleche 1'] = None
+    data_Fleches_Temp[Team_Turn]['Fleche 2'] = None
+    data_Fleches_Temp[Team_Turn]['Fleche 3'] = None
+    data_Fleches_Temp[Team_Turn]['Coef 1'] = None
+    data_Fleches_Temp[Team_Turn]['Coef 2'] = None
+    data_Fleches_Temp[Team_Turn]['Coef 3'] = None
     
-    return data_Live_New_Way
+    return data_Fleches_Temp
 
 
-def Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number) :
+def Submit_Turn(data_Fleches_Temp, Team_Turn, Next_Player, Dart_Number) :
 
-    if data_Live_New_Way[Team_Turn]['Fleche 1'] is not None:
+    if data_Fleches_Temp[Team_Turn]['Fleche 1'] is not None:
         
-        coef1 = data_Live_New_Way[Team_Turn]['Coef 1']  # Save the shots 
-        Dart1 = data_Live_New_Way[Team_Turn]['Fleche 1'] 
+        coef1 = data_Fleches_Temp[Team_Turn]['Coef 1']  # Save the shots 
+        Dart1 = data_Fleches_Temp[Team_Turn]['Fleche 1'] 
     else: # submitted with no entry
         coef1 = 1
         Dart1 = 0            
         
         
-    if data_Live_New_Way[Team_Turn]['Fleche 2'] is not None:
+    if data_Fleches_Temp[Team_Turn]['Fleche 2'] is not None:
     
-        coef2 = data_Live_New_Way[Team_Turn]['Coef 2'] 
-        Dart2 = data_Live_New_Way[Team_Turn]['Fleche 2'] 
+        coef2 = data_Fleches_Temp[Team_Turn]['Coef 2'] 
+        Dart2 = data_Fleches_Temp[Team_Turn]['Fleche 2'] 
     else: # submitted with no entry
         coef2 = 1
         Dart2 = 0 
         Dart_Number = 0
     
             
-    if data_Live_New_Way[Team_Turn]['Fleche 3'] is not None:
+    if data_Fleches_Temp[Team_Turn]['Fleche 3'] is not None:
     
-        coef3 = data_Live_New_Way[Team_Turn]['Coef 3'] 
-        Dart3 = data_Live_New_Way[Team_Turn]['Fleche 3'] 
+        coef3 = data_Fleches_Temp[Team_Turn]['Coef 3'] 
+        Dart3 = data_Fleches_Temp[Team_Turn]['Fleche 3'] 
     else: # submitted with no entry
         coef3 = 1
         Dart3 = 0 
@@ -278,19 +267,19 @@ def Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number) :
     Darts = [Dart1, Dart2, Dart3]
     Coef = [coef1,coef2,coef3]
 
-    data_Live_New_Way[Next_Player]['Fleche 1'] = None # Erase the shots of the next player
-    data_Live_New_Way[Next_Player]['Fleche 2'] = None 
-    data_Live_New_Way[Next_Player]['Fleche 3'] = None
-    data_Live_New_Way[Next_Player]['Coef 1'] = None
-    data_Live_New_Way[Next_Player]['Coef 2'] = None
-    data_Live_New_Way[Next_Player]['Coef 3'] = None
+    data_Fleches_Temp[Next_Player]['Fleche 1'] = None # Erase the shots of the next player
+    data_Fleches_Temp[Next_Player]['Fleche 2'] = None 
+    data_Fleches_Temp[Next_Player]['Fleche 3'] = None
+    data_Fleches_Temp[Next_Player]['Coef 1'] = None
+    data_Fleches_Temp[Next_Player]['Coef 2'] = None
+    data_Fleches_Temp[Next_Player]['Coef 3'] = None
         
 
 
-    return Darts, Coef , data_Live_New_Way, Dart_Number
+    return Darts, Coef , data_Fleches_Temp, Dart_Number
 
 
-def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_Game,Dart_Number,
+def Score_Update_Cricket(Darts, Coef, Turn, Score_Table, Team_Turn, Team_Number_Game,Dart_Number,
 #                Score_History,
                  Cricket_Type):
 
@@ -310,11 +299,11 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
             else : 
                 value_string = str(int(value))        
             
-            if data_Table[Team_Turn][value_string] + coef <= 3 : # Si celui qui joue ne ferme pas le chiffre qu'il a touché 
-                data_Table[Team_Turn][value_string] = data_Table[Team_Turn][value_string] + coef
+            if Score_Table[Team_Turn][value_string] + coef <= 3 : # Si celui qui joue ne ferme pas le chiffre qu'il a touché 
+                Score_Table[Team_Turn][value_string] = Score_Table[Team_Turn][value_string] + coef
                 Fleche_qui_Ferme[j] = coef
         
-            elif data_Table[Team_Turn][value_string] == 3 : # si celui qui joue avait deja fermé
+            elif Score_Table[Team_Turn][value_string] == 3 : # si celui qui joue avait deja fermé
                 
                 if Cricket_Type == 'Cut_Throat':
                 
@@ -324,8 +313,8 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
                         if i == Team_Turn:
                             continue
                         
-                        if data_Table[i][value_string] < 3 : # mets des points à ceux qui n'ont pas fermé
-                            data_Table[i]['Score'] = data_Table[i]['Score'] + value * coef
+                        if Score_Table[i][value_string] < 3 : # mets des points à ceux qui n'ont pas fermé
+                            Score_Table[i]['Score'] = Score_Table[i]['Score'] + value * coef
                             Degats[j][i] = value * coef
 
                 else:
@@ -335,16 +324,16 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
                         if i == Team_Turn : 
                             continue
 
-                        if data_Table[i][value_string] < 3 :
+                        if Score_Table[i][value_string] < 3 :
                                  
                             Checking_Other_Scores = 1
                     
                     if Checking_Other_Scores == 1:
-                        data_Table[Team_Turn]['Score'] = data_Table[Team_Turn]['Score'] + value * coef
+                        Score_Table[Team_Turn]['Score'] = Score_Table[Team_Turn]['Score'] + value * coef
                         Degats[j][Team_Turn] = value * coef
 
                     
-            elif data_Table[Team_Turn][value_string] + coef >= 3: # Si celui qui joue ferme ce chiffre pendant ce tour            
+            elif Score_Table[Team_Turn][value_string] + coef >= 3: # Si celui qui joue ferme ce chiffre pendant ce tour            
                 
                 if Cricket_Type == 'Cut_Throat':
                     
@@ -353,11 +342,11 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
                         if i == Team_Turn:
                             continue
                                 
-                        if data_Table[i][value_string] < 3:
-                            data_Table[i]['Score'] = data_Table[i]['Score'] + value * ( data_Table[Team_Turn][value_string] + coef - 3 )
-                            Degats[j][i] = value * ( data_Table[Team_Turn][value_string] + coef - 3 )
+                        if Score_Table[i][value_string] < 3:
+                            Score_Table[i]['Score'] = Score_Table[i]['Score'] + value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                            Degats[j][i] = value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
                         
-                        Fleche_qui_Ferme[j] = 3 - data_Table[Team_Turn][value_string] # je crois tous les fleches qui ferme ne doivent pas etre dans le if!
+                        Fleche_qui_Ferme[j] = 3 - Score_Table[Team_Turn][value_string] # je crois tous les fleches qui ferme ne doivent pas etre dans le if!
 
                 else: 
                     Checking_Other_Scores = 0
@@ -366,33 +355,33 @@ def Score_Update_Cricket(Darts, Coef, Turn, data_Table, Team_Turn, Team_Number_G
                         if i == Team_Turn : 
                             continue
 
-                        if data_Table[i][value_string] < 3 :
+                        if Score_Table[i][value_string] < 3 :
                                  
                             Checking_Other_Scores = 1
                     
                     if Checking_Other_Scores == 1:
                 
-                        data_Table[Team_Turn]['Score'] = data_Table[Team_Turn]['Score'] + value * ( data_Table[Team_Turn][value_string] + coef - 3 )
-                        Degats[j][Team_Turn] = value * ( data_Table[Team_Turn][value_string] + coef - 3 )
+                        Score_Table[Team_Turn]['Score'] = Score_Table[Team_Turn]['Score'] + value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                        Degats[j][Team_Turn] = value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
                         
-                        Fleche_qui_Ferme[j] = 3 - data_Table[Team_Turn][value_string]
+                        Fleche_qui_Ferme[j] = 3 - Score_Table[Team_Turn][value_string]
 
-                data_Table[Team_Turn][value_string] = 3  # (Needs to be after the for loop!)
+                Score_Table[Team_Turn][value_string] = 3  # (Needs to be after the for loop!)
             
         
         ### Calculate the distance in score to the leading score
      
-        #Score_min = min(data_Table[i]['Score'] for i in range(Team_Number_Game))
+        #Score_min = min(Score_Table[i]['Score'] for i in range(Team_Number_Game))
         for i in range(Team_Number_Game):
-            data_Table[i]['Delta'] = data_Table[i]['Score'] - data_Table[Team_Turn]['Score']
+            Score_Table[i]['Delta'] = Score_Table[i]['Score'] - Score_Table[Team_Turn]['Score']
 
         DartRound_Data.append([Team_Turn, Turn+1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
         
 
-    return data_Table, DartRound_Data
+    return Score_Table, DartRound_Data
 
 
-def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, Team_Number_Game,Dart_Number, Douze):
+def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, Score_Table, Team_Turn, Team_Number_Game,Dart_Number, Douze):
 
     DartRound_Data= []
 
@@ -407,26 +396,26 @@ def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, T
             for j in range (0, len(Darts) ): # for each dart, fill in the score table
                 if (Coef[j]==2):
                     Factor = 1
-                    data_Table[Team_Turn][Douze[Turn_Counter_Index]] = data_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
+                    Score_Table[Team_Turn][Douze[Turn_Counter_Index]] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
                     Degats[j][Team_Turn] =  Degats[j][Team_Turn] + Darts[j] * Coef[j]
-                    Fleche_qui_Ferme[j] = data_Table[Team_Turn][Douze[Turn_Counter_Index]]
+                    Fleche_qui_Ferme[j] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]]
 
         if Douze[Turn_Counter_Index] == 'Triple':
             for j in range (0, len(Darts) ): # for each dart, fill in the score table
                 if (Coef[j]==3):
                     Factor = 1
-                    data_Table[Team_Turn][Douze[Turn_Counter_Index]] = data_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
+                    Score_Table[Team_Turn][Douze[Turn_Counter_Index]] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
                     Degats[j][Team_Turn] =  Degats[j][Team_Turn] + Darts[j] * Coef[j]
-                    Fleche_qui_Ferme[j] = data_Table[Team_Turn][Douze[Turn_Counter_Index]]
+                    Fleche_qui_Ferme[j] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]]
                     
         
         if Douze[Turn_Counter_Index] == 'Bull':
             for j in range (0, len(Darts) ): # for each dart, fill in the score table
                 if (Darts[j]==25):
                     Factor = 1
-                    data_Table[Team_Turn][Douze[Turn_Counter_Index]] = data_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
+                    Score_Table[Team_Turn][Douze[Turn_Counter_Index]] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
                     Degats[j][Team_Turn] =  Degats[j][Team_Turn] + Darts[j] * Coef[j]
-                    Fleche_qui_Ferme[j] = data_Table[Team_Turn][Douze[Turn_Counter_Index]]
+                    Fleche_qui_Ferme[j] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]]
 
 
 
@@ -437,65 +426,35 @@ def Score_Update_Douze(Darts, Coef, Turn_Counter_Index, data_Table, Team_Turn, T
             
             if ( Darts[j] == int(Douze[Turn_Counter_Index]) ):
                 Factor = 1
-                data_Table[Team_Turn][Douze[Turn_Counter_Index]] = data_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
+                Score_Table[Team_Turn][Douze[Turn_Counter_Index]] = Score_Table[Team_Turn][Douze[Turn_Counter_Index]] + Coef[j]
                 Degats[j][Team_Turn] =  Degats[j][Team_Turn] + Darts[j] * Coef[j]
                 Fleche_qui_Ferme[j] = Coef[j]
 
 
-    data_Table[Team_Turn]['Score'] = round(Factor * data_Table[Team_Turn]['Score'] + Degats[0][Team_Turn]+ Degats[1][Team_Turn]+ Degats[2][Team_Turn])
+    Score_Table[Team_Turn]['Score'] = round(Factor * Score_Table[Team_Turn]['Score'] + Degats[0][Team_Turn]+ Degats[1][Team_Turn]+ Degats[2][Team_Turn])
 
     for j in range (0, len(Darts) ): # save each dart
 
         DartRound_Data.append([Team_Turn,Turn_Counter_Index + 1, j+1, Darts[j],Coef[j],Degats[j], Fleche_qui_Ferme[j]]) # sauvegarde info fleche i
  
 
-    return data_Table, DartRound_Data
+    return Score_Table, DartRound_Data
 
 
-
-
-def Remove_Last_Round_New(Player_Number_Game, data_Table,
-                          Darts_Total,
-                          Player_Precedent, Game, Turn_Counter,
-                          data_Historique  
-                         ):
-    # enlever les contributions au score
-
+def Remove_Last_Round(data_Historique, Darts_Total):
     
-     # enlever les eventuels degats infliger par les 3 dernieres flechettes.
-    for i in range (0, Player_Number_Game):
-        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-1]['Dégats'][i] # degats de la 3eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-2]['Dégats'][i] # degats de la 2eme fleche du joueur precedent infligés à chaque joueur
-        data_Table[i]['Score'] = data_Table[i]['Score'] - data_Historique[-3]['Dégats'][i] # degats de la 1ere fleche du joueur precedent infligés à chaque joueur      
-                
-    # enlever les touches obtenus par le joueur precedent sur ses 3 dernieres flechettes.
-    for i in range (0, Darts_Total ):
-        if data_Historique[-i-1]['Ferme le chiffre'] > 0:
-                        
-            if data_Historique[-i-1]['Valeur'] == 25 :
-                value_Precedent_Dart_string = 'Bull'  
-            elif Game[Turn_Counter] == 'Double' :
-                value_Precedent_Dart_string = 'Double'
-            elif Game[Turn_Counter] == 'Triple':
-                value_Precedent_Dart_string = 'Triple'      
-            else : 
-                value_Precedent_Dart_string = str(int(data_Historique[-i-1]['Valeur'])) 
-                        
-            data_Table[Player_Precedent][value_Precedent_Dart_string] = data_Table[Player_Precedent][value_Precedent_Dart_string] - data_Historique[-i-1]['Ferme le chiffre']
-                
-    if Game == ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score'] and  data_Historique[-0-1]['Ferme le chiffre'] == 0  and  data_Historique[-1-1]['Ferme le chiffre'] == 0 and  data_Historique[-2-1]['Ferme le chiffre'] == 0   :     
-    
-        data_Table[Player_Precedent]['Score'] = data_Table[Player_Precedent]['Score'] * 2
+    for i in range (0, Darts_Total):
+
+        del(data_Historique[-1])
+ 
+
+    return data_Historique
 
 
-    del(data_Historique[-1])
-    del(data_Historique[-1])
-    del(data_Historique[-1])
 
-    return (data_Table, data_Historique)
   
 
-def Get_Click_Data(clickData,df_darts,Dart_Number,data_Live_New_Way, Player_Turn, Darts_Total) :
+def Get_Click_Data(clickData,df_darts,Dart_Number,data_Fleches_Temp, Player_Turn, Darts_Total) :
     click_Location = clickData['points'][0]['location']
     touched_polygon = df_darts.loc[df_darts["id"] == click_Location].index[0]
     value = df_darts.loc[touched_polygon, 'value']
@@ -506,66 +465,84 @@ def Get_Click_Data(clickData,df_darts,Dart_Number,data_Live_New_Way, Player_Turn
             
     if Dart_Number == 0: # Entering the score of the 1st dart
  
-        data_Live_New_Way[Player_Turn]['Fleche 1'] = value 
-        data_Live_New_Way[Player_Turn]['Coef 1']= coef
+        data_Fleches_Temp[Player_Turn]['Fleche 1'] = value 
+        data_Fleches_Temp[Player_Turn]['Coef 1']= coef
                     
     if Dart_Number == 1: # Entering the score of the 2nd dart
                                        
-        data_Live_New_Way[Player_Turn]['Fleche 2'] = value 
-        data_Live_New_Way[Player_Turn]['Coef 2'] = coef
+        data_Fleches_Temp[Player_Turn]['Fleche 2'] = value 
+        data_Fleches_Temp[Player_Turn]['Coef 2'] = coef
                     
     if Dart_Number == 2: # Entering the score of the 3rd dart
                                         
-        data_Live_New_Way[Player_Turn]['Fleche 3'] = value 
-        data_Live_New_Way[Player_Turn]['Coef 3'] = coef
+        data_Fleches_Temp[Player_Turn]['Fleche 3'] = value 
+        data_Fleches_Temp[Player_Turn]['Coef 3'] = coef
         Dart_Number = 1 # (so that the highlight changes once you validate)
                     
     Dart_Number = (Dart_Number + 1) % Darts_Total
 
-    return clickData, Dart_Number, data_Live_New_Way
+    return clickData, Dart_Number, data_Fleches_Temp
 
-def Get_Stats(data_Historique,Stats_Table,Team_List,Stats_Graph,Dropdown_Value):
+def Get_Stats(data_Historique,Stats_Table,Team_List,Stats_Graph,Dropdown_Value,Value_RadioItem='Stat_Equipe'):
 
- 
+    if len(data_Historique) != 0 : # still probelm if one of the teams hasnt played yet....
+        N_Tours = data_Historique[-1]['Tour']
 
-    X = [ [j+1  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
-    Y = [ [None  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+        if Value_RadioItem == 'Stat_Equipe':
+            N_Joueur = len(list(Team_List.keys()))
+        else:
+            Player_List = [element for sublist in list(Team_List.values()) for element in sublist]
+            N_Joueur =  len(Player_List)
 
-    N_Touche = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
-    Hover_Data_Fleche1 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
-    Hover_Data_Fleche2 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
-    Hover_Data_Fleche3 = [ [0  for j in range (0, data_Historique[-1]['Tour']  )] for i in range (0,len(list(Team_List.keys()))) ]
+        X = [ [j+1  for j in range (0, N_Tours  )] for i in range (0,N_Joueur) ]
+        Y = [ [None  for j in range (0, N_Tours  )] for i in range (0,N_Joueur) ]
+
+        N_Touche = [ [0  for j in range (0, N_Tours  )] for i in range (0,N_Joueur) ]
+        N_Degats = [ [0  for j in range (0, N_Tours  )] for i in range (0,N_Joueur) ]
+
+        
+        Hover_Data = [ [0  for j in range (0, N_Tours )] for i in range (0,N_Joueur) ]
+
+        for i in range (0, int( len(data_Historique) / 3) ): # Analysing the 3 darts of the turn in one go
+            if Value_RadioItem == 'Stat_Equipe':
+
+                Player_Turn = list(Team_List.keys()).index(data_Historique[ 3*i ]['Equipe'])
+                Tour_Reel = data_Historique[ 3*i ]['Tour']
+
+            else:
+                
+                Player_Turn =  Player_List.index(data_Historique[ 3*i ]['Joueur'])
+                Tour_Reel = data_Historique[ 3*i ]['Tour'] / len( Team_List[data_Historique[ 3*i ]['Equipe']]) 
+            
 
 
+            f1 = data_Historique[ 3*i + 0 ]['Valeur']
+            f2 = data_Historique[ 3*i + 1 ]['Valeur']
+            f3 = data_Historique[ 3*i + 2 ]['Valeur']
 
-    for i in range (0, int( len(data_Historique) / 3) ): # Analysing the 3 darts of the turn in one go
+            c1 = data_Historique[ 3*i + 0 ]['Coef']
+            c2 = data_Historique[ 3*i + 1 ]['Coef']
+            c3 = data_Historique[ 3*i + 2 ]['Coef']
 
-        Player_Turn = list(Team_List.keys()).index(data_Historique[ 3*i ]['Player'])
+            hover_text = f"Fleche 1: {f1:02} Coef: {c1} <br>Fleche 2: {f2:02} Coef: {c2}<br>Fleche 3: {f3:02} Coef: {c3}"
+            Hover_Data[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = hover_text
 
 
-        if ( (data_Historique[ 3*i + 0 ]['Ferme le chiffre'] 
-            + data_Historique[ 3*i + 1 ]['Ferme le chiffre']
-            + data_Historique[ 3*i + 2 ]['Ferme le chiffre'] == 0) 
-            and
-             (np.sum(data_Historique[ 3*i + 0 ]['Dégats']) 
-            + np.sum(data_Historique[ 3*i + 1 ]['Dégats'])
-            + np.sum(data_Historique[ 3*i + 2 ]['Dégats']) == 0) ): # si tour à vide
+            if ( (data_Historique[ 3*i + 0 ]['Ferme le chiffre'] 
+                + data_Historique[ 3*i + 1 ]['Ferme le chiffre']
+                + data_Historique[ 3*i + 2 ]['Ferme le chiffre'] == 0) 
+                and
+                (np.sum(data_Historique[ 3*i + 0 ]['Dégats']) 
+                + np.sum(data_Historique[ 3*i + 1 ]['Dégats'])
+                + np.sum(data_Historique[ 3*i + 2 ]['Dégats']) == 0) ): # si tour à vide
 
-            Stats_Table[Player_Turn]['# de tour à vide'] = Stats_Table[Player_Turn]['# de tour à vide'] + 1
+                Stats_Table[Player_Turn]['# de tour à vide'] = Stats_Table[Player_Turn]['# de tour à vide'] + 1
 
-        else :
+            else :
+                
+
                 for j in range (0, 3):
                     
-                    if j == 0:
-                        Hover_Data_Fleche1[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
-                    elif j ==1:
-                        Hover_Data_Fleche2[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
-                    elif j ==2:
-                        Hover_Data_Fleche3[Player_Turn][data_Historique[ 3*i ]['Tour'] - 1 ] = data_Historique[ 3*i + j ]['Valeur']
-
-
-
-
                     if ( (data_Historique[ 3*i + j ]['Coef'] == 3) and 
                         (data_Historique[ 3*i + j ]['Dégats'] != 0 or data_Historique[ 3*i + j ]['Ferme le chiffre'] != 0) ):
                     # la flechette est un triple et il a compté (meme partiellement)
@@ -579,103 +556,209 @@ def Get_Stats(data_Historique,Stats_Table,Team_List,Stats_Graph,Dropdown_Value):
 
                     if( data_Historique[ 3*i + j ]['Valeur'] != 0):
                         
-#                        N_Touche = N_Touche + data_Historique[ 3*i + j ]['Ferme le chiffre']  + np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
-                        N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1 ] = N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1] + data_Historique[ 3*i + j ]['Ferme le chiffre']  + np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
+    #                        N_Touche = N_Touche + data_Historique[ 3*i + j ]['Ferme le chiffre']  + np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
+                        N_Touche_Precedent = N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1]
+                        N_Touche_Ferme = data_Historique[ 3*i + j ]['Ferme le chiffre']
+                        N_Touche_Degats =  np.max(data_Historique[ 3*i + j ]['Dégats']) / data_Historique[ 3*i + j ]['Valeur']
+                        N_Touche[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1 ] =  N_Touche_Precedent + N_Touche_Ferme  + N_Touche_Degats
+                        N_Degats[Player_Turn][data_Historique[ 3*i + j ]['Tour'] - 1 ] = np.sum(data_Historique[ 3*i + j ]['Dégats']) 
+
                 
-        N_Touche_Tot= np.sum(N_Touche[Player_Turn]) # = au nombre de touche total pour cette equipe
-        
-#        Stats_Table[Player_Turn]['# Touche/ Tour'] = ( Stats_Table[Player_Turn]['# Touche/ Tour'] * ( data_Historique[ 3*i ]['Tour'] -1) + N_Touche ) / (data_Historique[ 3*i ]['Tour'])
-        Stats_Table[Player_Turn]['# Touche/ Tour'] =  N_Touche_Tot  / (data_Historique[ 3*i ]['Tour'])
+            N_Touche_Tot= np.sum(N_Touche[Player_Turn]) # = au nombre de touche total pour cette equipe
+            N_Degats_Tot= np.sum(N_Degats[Player_Turn]) # = au nombre de degats total pour cette equipe
+
+            
+    #        Stats_Table[Player_Turn]['# Touche/ Tour'] = ( Stats_Table[Player_Turn]['# Touche/ Tour'] * ( data_Historique[ 3*i ]['Tour'] -1) + N_Touche ) / (data_Historique[ 3*i ]['Tour'])
+            Stats_Table[Player_Turn]['# Touche/ Tour'] =  N_Touche_Tot  / Tour_Reel
+            Stats_Table[Player_Turn]['# Degats/ Tour'] =  N_Degats_Tot  / Tour_Reel
+
+        #    print('N Touche Precedent:', N_Touche_Precedent)
+        #    print('N Touche Ferme:', N_Touche_Ferme)
+        #    print('N Touche Degats:', N_Touche_Degats)
+        #    print('N Touche Tot:', N_Touche_Tot)
+       
+            
+            Y[Player_Turn][ data_Historique[ 3*i  ]['Tour'] -1  ] = Stats_Table[Player_Turn][Dropdown_Value]
 
         
-        Y[Player_Turn][ data_Historique[ 3*i  ]['Tour'] -1  ] = Stats_Table[Player_Turn][Dropdown_Value]
-
-    
-    Stats_Graph['layout']['yaxis']['title']['text'] = Dropdown_Value
+        Stats_Graph['layout']['yaxis']['title']['text'] = Dropdown_Value
 
 
-    for i in range (0,len(list(Team_List.keys()))):
+        for i in range (0,N_Joueur):
 
-        Stats_Graph['data'][i]['x'] = X[i]  
-        Stats_Graph['data'][i]['y'] = Y[i]
+            Stats_Graph['data'][i]['x'] = X[i]  
+            Stats_Graph['data'][i]['y'] = Y[i]
 
-        N_Touche_array = np.array(N_Touche[i])
-        N_Touche_array_Rescaled = (N_Touche_array+1) *10
-        Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle', 'size':N_Touche_array_Rescaled})
-
-#        print('data historique i:',data_Historique[i])
-#        Stats_Graph.data[i].update( hovertemplate =f'<b>Fleche 1:{data_Historique[i][3]:.0f}</b><br>Fleche 2:{Score_History[-2][3]:.3f} <br>Fleche3:{Score_History[-1][3]:.3f} ')
-        
-        print('Hover Data :',Hover_Data_Fleche1)
-     #   Stats_Graph.data[i].update( hovertemplate = "Col1: %{Hover_Data_Fleche1[i]}") #, "Col2: %{customdata[1]}", "Col3: %{customdata[2]}")
-
-        Stats_Graph.data[i].update( hovertemplate =f'<b>Fleche 1:{Hover_Data_Fleche1[i][0]:.0f} ')
-
-    print('data historique :',data_Historique)
+            N_Touche_array = np.array(N_Touche[i])
+    #        N_Touche_array_Rescaled = (N_Touche_array+1) *10 #/ max(N_Touche_array)
+            N_Touche_array_Rescaled = (N_Touche_array / max(N_Touche_array) + 1 )  *20
+#need to sort out this colour mapping shit
+#            Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle', 'size':N_Touche_array_Rescaled})
+            Stats_Graph.data[i].update(marker={'symbol':'circle', 'size':N_Touche_array_Rescaled})
+            Stats_Graph.data[i].update( hovertemplate = Hover_Data[i] )
 
     return Stats_Table, Stats_Graph
 
 
 
-def Update_Live_Player(data_Live_New_Way, Turn, Team_Number_Game, Team_List):
+def Update_Live_Player(data_Fleches_Temp, Turn, Team_Number_Game, Team_List):
 
     Number_Of_Players = len(Team_List[ list(Team_List.keys())[Turn % Team_Number_Game] ])
     Team_Turn = list(Team_List.keys())[Turn % Team_Number_Game]
     Player_Turn = Team_List[Team_Turn][int(Turn / Team_Number_Game) %  Number_Of_Players]
     
-    data_Live_New_Way[Turn % Team_Number_Game]['index'] = Player_Turn
+    data_Fleches_Temp[Turn % Team_Number_Game]['index'] = Player_Turn
 
-    return data_Live_New_Way
+    return data_Fleches_Temp
 
 
-def Number_Open_Close_f(name, Team_Number_Game, data_Table, Turn_Counter_Index, Turn_Counter):
+def Number_Open_Close_f(name, Team_Number_Game, Score_Table, Turn_Counter_Index, Turn_Counter):
     if name == "Cricket":
         Number_Open_Close = Open_Or_Closed(name,
                                            Team_Number_Game,
-                                           data_Table,
+                                           Score_Table,
                                            Turn_Counter_Index)
     elif name == "Douze":
-        Number_Open_Close = Douze_Turn(Game, 
+        Number_Open_Close = Douze_Turn(name, 
                                        int(Turn_Counter / Team_Number_Game))
     return Number_Open_Close
 
-def submit_score(name, Cricket_Type, data_Live_New_Way, Team_Turn, Next_Player, Dart_Number,
-                 Turn, Team_Number_Game, data_Table, Darts_Total, data_Historique,
-                 Column_Storage, Team_List, local_path):
-
-    Turn_Number = int(Turn / Team_Number_Game) + 1
-    Darts, Coef, data_Live_New_Way, Dart_Number = Submit_Turn(data_Live_New_Way, Team_Turn, Next_Player, Dart_Number)
 
 
+def Render_Score_Table(data_Historique,Team_List,Cricket_Type,Score_Table):
 
-    if name == "Cricket":
-        data_Table, DartRound_Data = Score_Update_Cricket(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number , Cricket_Type)
+    N_Teams = len( list(Team_List.keys()) )
+   
+    for j in range (0, len(data_Historique) ):
+        Fleche = data_Historique[j]['Valeur']
+        Team_Turn = list(Team_List.keys()).index(data_Historique[j]['Equipe'])
 
-    elif name == "Douze":
-        Douze = ['12', '13', '14','Double','15','16','17','Triple','18', '19', '20', 'Bull', 'Score']
-        data_Table, DartRound_Data = Score_Update_Douze(Darts, Coef, Turn_Number-1, data_Table, Team_Turn, Team_Number_Game, Dart_Number,  Douze)
+        if ( Fleche >= 15 ):
+            value = Fleche
+            coef = data_Historique[j]['Coef']       
+            if value == 25 :
+                value_string = 'Bull'        
+            else : 
+                value_string = str(int(value))        
+            
+            if Score_Table[Team_Turn][value_string] + coef <= 3 : # Si celui qui joue ne ferme pas le chiffre qu'il a touché 
+                Score_Table[Team_Turn][value_string] = Score_Table[Team_Turn][value_string] + coef
+                data_Historique[j]['Ferme le chiffre'] = coef
+            elif Score_Table[Team_Turn][value_string] == 3 : # si celui qui joue avait deja fermé
+                
+                if Cricket_Type == 'Cut_Throat':
+                
+                    for i in range (0, N_Teams):
+                    
+                    
+                        if i == Team_Turn:
+                            continue
+                        
+                        if Score_Table[i][value_string] < 3 : # mets des points à ceux qui n'ont pas fermé
+                            Score_Table[i]['Score'] = Score_Table[i]['Score'] + value * coef
+                            data_Historique[j]['Dégats'][i] =  value * coef
+
+                else:
+                    Checking_Other_Scores = 0
+                    for i in range (0, N_Teams):
+
+                        if i == Team_Turn : 
+                            continue
+
+                        if Score_Table[i][value_string] < 3 :
+                                 
+                            Checking_Other_Scores = 1
+                    
+                    if Checking_Other_Scores == 1:
+                        Score_Table[Team_Turn]['Score'] = Score_Table[Team_Turn]['Score'] + value * coef
+                        data_Historique[j]['Dégats'][Team_Turn] =  value * coef
+
+                    
+            elif Score_Table[Team_Turn][value_string] + coef >= 3: # Si celui qui joue ferme ce chiffre pendant ce tour            
+                
+                if Cricket_Type == 'Cut_Throat':
+                    
+                    for i in range (0, N_Teams):
+
+                        if i == Team_Turn:
+                            continue
+                                
+                        if Score_Table[i][value_string] < 3:
+                            Score_Table[i]['Score'] = Score_Table[i]['Score'] + value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                            data_Historique[j]['Dégats'][i] = value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                        
+                        data_Historique[j]['Ferme le chiffre'] = 3 - Score_Table[Team_Turn][value_string] # je crois tous les fleches qui ferme ne doivent pas etre dans le if!
+
+                else: 
+                    Checking_Other_Scores = 0
+                    for i in range (0, N_Teams):
+
+                        if i == Team_Turn : 
+                            continue
+
+                        if Score_Table[i][value_string] < 3 :
+                                 
+                            Checking_Other_Scores = 1
+                    
+                    if Checking_Other_Scores == 1:
+                
+                        Score_Table[Team_Turn]['Score'] = Score_Table[Team_Turn]['Score'] + value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                        data_Historique[j]['Dégats'][Team_Turn] = value * ( Score_Table[Team_Turn][value_string] + coef - 3 )
+                        
+                        data_Historique[j]['Ferme le chiffre'] = 3 - Score_Table[Team_Turn][value_string]
+
+                Score_Table[Team_Turn][value_string] = 3  # (Needs to be after the for loop!)
+            
+        
+        ### Calculate the distance in score to the leading score
+     
+        for i in range(N_Teams):
+            Score_Table[i]['Delta'] = Score_Table[i]['Score'] - Score_Table[Team_Turn]['Score']
+
+
+
+    return Score_Table, data_Historique
+
+
+def Temp_To_Historique(data_Fleches_Temp,data_Historique,Column_Storage,Darts_Total,Team_List,Step,local_path,Team_Turn_index, Next_Player, Dart_Number):
+
+    N_Teams = len( list(Team_List.keys()) )
+
+    N_Players = len(Team_List[ list(Team_List.keys())[Step % N_Teams] ])
+    Team_Turn = list(Team_List.keys())[Step % N_Teams]
 
     
+    Player = Team_List[Team_Turn][int(Step / N_Teams) %  N_Players]
+
+
+
+    Darts, Coef , data_Fleches_Temp, Dart_Number = Submit_Turn(data_Fleches_Temp, Team_Turn_index, Next_Player, Dart_Number) 
+
+    DartRound_Data = []
+    Degats = [0 for j in range (0,N_Teams)]
+    Fleche_qui_Ferme = [0,0,0]
+    
+
     for i in range(Darts_Total):
+        
+        DartRound_Data.append([Team_Turn_index, Player ,int(Step/N_Teams)+1, i+1, Darts[i],Coef[i],Degats, Fleche_qui_Ferme[i]]) # sauvegarde info fleche i
         data_Historique.append( {Column_Storage[j]:DartRound_Data[i][j] for j in range(len(Column_Storage))})
     #########    data_Historique[-1][Column_Storage[5]] = np.sum(DartRound_Data[i][5])  
-#     data_Historique[-1][Column_Storage[0]] = Team_List[Score_History[-3+i][0]]  
         data_Historique[-1][Column_Storage[0]] = list(Team_List.keys())[DartRound_Data[i][0]]  
 
-    
-    Turn = Turn + 1 # change index for next player
-    
-    data_Live_New_Way = Update_Live_Player(data_Live_New_Way, Turn, 
-                                           Team_Number_Game , Team_List)
 
-    Save_Everyone(local_path,Turn,data_Historique,data_Table)
+    Step = Step + 1 # change index for next player
 
-    return data_Live_New_Way, Turn, data_Historique, data_Table, 
-    
+    data_Fleches_Temp = Update_Live_Player(data_Fleches_Temp, Step , 
+                                           N_Teams , Team_List)
+
+    Save_Everyone(local_path,data_Historique)
+
+
+    return data_Fleches_Temp,data_Historique, Step
+
                 
-        
-                
-def End_Game(data_Table,
+def End_Game(Score_Table,
              Team_Number_Game,
              Team_Turn,
              Score_History,
@@ -683,17 +766,17 @@ def End_Game(data_Table,
              Darts_Total,
              Cricket):
 
-    small_victory = all([data_Table[Team_Turn][el] == 3 for el in Cricket[:-1]])
+    small_victory = all([Score_Table[Team_Turn][el] == 3 for el in Cricket[:-1]])
     if small_victory: # end game criteria    
         print("small victory")
-        Score_min = min(data_Table[i]['Score'] for i in range(Team_Number_Game))
+        Score_min = min(Score_Table[i]['Score'] for i in range(Team_Number_Game))
         
-        print("data_Table:", data_Table)
+        print("Score_Table:", Score_Table)
         print("Team_Number_Game:", Team_Number_Game)
         print("Team_Turn:", Team_Turn)
         print("Score_History:", Score_History)
         print("Team_List:", Team_List)        
-        if data_Table[Team_Turn]['Score'] == Score_min:
+        if Score_Table[Team_Turn]['Score'] == Score_min:
             Deroulement_de_Partie = pd.DataFrame(Score_History)
             Deroulement_de_Partie.to_csv('Partie.csv')  # sauvegarde le derouler de partie
             
@@ -716,13 +799,7 @@ def End_Game(data_Table,
                 Partie_Joueur.to_csv('{}.csv'.format(list(Team_List.keys())[i]),index = False)
 
 
-def Save_Everyone(local_path,Turn,data_Historique,data_Table):
-
-    f1 = open(os.path.join(local_path, "Turn_Counter.txt"), "w")
-    f1.write(str(Turn))
-    f1.close()
-
+def Save_Everyone(local_path,data_Historique):
 
     np.save(os.path.join(local_path, 'data_Historique.npy'), data_Historique)
 
-    np.save(os.path.join(local_path, 'data_Table.npy'), data_Table)

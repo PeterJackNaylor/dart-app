@@ -22,14 +22,14 @@ From the root of the project, `python utils/dart_mapping.py` should do the trick
 
 ## DNS server
 
-Free on website (freenom)[https://www.freenom.com/en/index.html?lang=en].
+Free on website [freenom](https://www.freenom.com/en/index.html?lang=en).
 
-Picked: dartapp-denfert.tk
+Picked: [dart-app](www.dartapp-denfert.tk)
 And we create two A requests.
 
 ## nginx server
 Set nginx server for load balancing and all that...
-https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
+We followed this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04)
 
 And set up of https on the same link.
 We also took tricks and tips from:

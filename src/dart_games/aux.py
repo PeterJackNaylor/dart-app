@@ -11,7 +11,8 @@ from .styles_dash import color_mapping
 
 
 
-Column_Storage = ['Player',
+Column_Storage = ['Equipe',
+                  'Joueur',
                   'Tour',
                   'Flèche numéro',
                   'Valeur',
@@ -19,12 +20,14 @@ Column_Storage = ['Player',
                   'Dégats',
                   'Ferme le chiffre']
 
-Column_Live_Stats = ['# Touche/ Tour',
+Column_Live_Stats = ['index',
+                     '# Touche/ Tour',
                      '# de triple',
                      '# de double',
                      '# de tour à vide',
                      '# Degats/ Tour',
-                     'Tour']
+                     'Tour'
+                     ]
 
 
 Column_Live_Stats_Graph = ['# Touche/ Tour',
@@ -33,13 +36,13 @@ Column_Live_Stats_Graph = ['# Touche/ Tour',
                            '# de tour à vide',
                            '# Degats/ Tour',
                            'Tour',
-                           'Player']
+                           'Equipe']
 
-def init_db(att):
+def init_db(att, Value_RadioItem='Stat_Equipe'):
     Team_List = att["Team_List"]
     n_t = att["n_t"]
     Game = att["Game"]
-    Score_Storage = []
+
     # Douze = ['12', '13', '14', 'Double', '15', '16', '17', 'Triple',
     #          '18', '19', '20', 'Bull', 'Score']
 
@@ -53,15 +56,24 @@ def init_db(att):
     Flechette_Compteur = 0
 
     df_Score = init_df_score(n_t, Game, Team_List)
+    Score_Table = df_Score.to_dict('records')
 
-    df_score_live = init_df_live(att)
+    data_Fleches_Temp = init_df_live(att)
 
 
 
-    stat_init = np.zeros((n_t, len(Column_Live_Stats)), dtype=int)
-    df_Stat_Live = pd.DataFrame(stat_init,
+    
+    if Value_RadioItem == 'Stat_Equipe':
+        stat_init = np.zeros((n_t, len(Column_Live_Stats)), dtype=int)
+        df_Stat_Live = pd.DataFrame(stat_init,
                                 columns=Column_Live_Stats)
-    df_Stat_Live["index"] = list(Team_List.keys())
+        df_Stat_Live["index"] = list(Team_List.keys())
+    else:
+        Player_List =  [element for sublist in list(Team_List.values()) for element in sublist]
+        stat_init = np.zeros((len(Player_List), len(Column_Live_Stats)), dtype=int)
+        df_Stat_Live = pd.DataFrame(stat_init,
+                                columns=Column_Live_Stats)
+        df_Stat_Live["index"] = Player_List
 
     Stats_Table = df_Stat_Live.to_dict('records')
 
@@ -69,25 +81,44 @@ def init_db(att):
     data_Historique = pd.DataFrame(columns=Column_Storage).to_dict('records')
 
 
+    if Value_RadioItem == 'Stat_Equipe':
 
-    df_Graph_Live = init_stat_live(n_t, Team_List) 
-    Stats_Graph = px.scatter(df_Graph_Live,
-                          x="Tour",
-                          y="# Touche/ Tour",
-                          color=list(Team_List.keys()),
-                          hover_data=[]) #,size='petal_length', hover_data=['Dernier_Tour'])
-    Y_Live_Stats = [[0] * len(Column_Live_Stats_Graph)]
+        df_Graph_Live = init_stat_live(n_t, list(Team_List.keys())) 
+        Stats_Graph = px.scatter(df_Graph_Live,
+                              x="Tour",
+                              y="# Touche/ Tour",
+                              color=list(Team_List.keys()),
+                              hover_data=[]) #,size='petal_length', hover_data=['Dernier_Tour'])
+ #   Y_Live_Stats = [[0] * len(Column_Live_Stats_Graph)]
+        for i in range(n_t):
+            Stats_Graph.data[i].update(mode='markers+lines')
+            Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle'})
 
-    for i in range(n_t):
-        Stats_Graph.data[i].update(mode='markers+lines')
-        Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle'})
+        Stats_Graph.layout.update(legend={'title': {'text':'Equipe'}, 'tracegroupgap': 0})
 
-    Stats_Graph.layout.update(legend={'title': {'text':'Equipe'}, 'tracegroupgap': 0})
+    else:
+
+        Player_List =  [element for sublist in list(Team_List.values()) for element in sublist]
+        n_players = len(Player_List)
+        df_Graph_Live = init_stat_live(n_players, Player_List) 
+
+        Stats_Graph = px.scatter(df_Graph_Live,
+                              x="Tour",
+                              y="# Touche/ Tour",
+                              color= Player_List, # need to sort something out here and for colormappin below...
+                              hover_data=[]) #,size='petal_length', hover_data=['Dernier_Tour'])
+ #   Y_Live_Stats = [[0] * len(Column_Live_Stats_Graph)]
+        for i in range(n_players):
+            Stats_Graph.data[i].update(mode='markers+lines')
+#            Stats_Graph.data[i].update(marker={'color': color_mapping[list(Team_List.keys())[i]], 'symbol':'circle'})
+
+        Stats_Graph.layout.update(legend={'title': {'text':'Joueur'}, 'tracegroupgap': 0})
+
 
 
 
     (styles, legend) = discrete_background_color_bins(df_Score, 4, Game[:-2])
-    return Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats, df_score_live, df_Score, Stats_Table, Stats_Graph, data_Historique, legend
+    return Turn_Counter, Flechette_Compteur, data_Fleches_Temp,  Stats_Table, Stats_Graph,Score_Table, data_Historique, legend
 
 
 def init_stat_live(n, teams):
@@ -96,7 +127,8 @@ def init_stat_live(n, teams):
 
     df_Graph_Live = pd.DataFrame(init_graph_live,
                                  columns=Column_Live_Stats_Graph)
-    df_Graph_Live["index"] = list(teams.keys())
+    df_Graph_Live["index"] =teams
+
     return df_Graph_Live
 
 def init_df_score(n, game, teams):
@@ -115,7 +147,9 @@ def init_df_live(att):
     df_score = pd.DataFrame(np.array(score),
                             columns=column)
     df_score["index"] = index
-    return df_score
+    data_Fleches_Temp = df_score.to_dict('records')
+
+    return data_Fleches_Temp
 
 
 def load_local_dictionnary(local_path, name):
@@ -153,11 +187,11 @@ def load_local_dictionnary(local_path, name):
     }
     return game_att
 
-def check_if_init(data_Live_New_Way, game_att):
-    if len(data_Live_New_Way) != game_att['n_t']:
+def check_if_init(data_Fleches_Temp, game_att):
+    if len(data_Fleches_Temp) != game_att['n_t']:
         return True
     else:
-        team_current = [d['Equipe'] for d in data_Live_New_Way]
+        team_current = [d['Equipe'] for d in data_Fleches_Temp]
         team_file = [k for k in game_att['Team_List'].keys()]
         if team_current != team_file:
             return True

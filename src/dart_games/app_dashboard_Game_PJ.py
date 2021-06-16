@@ -15,10 +15,9 @@ import pandas as pd
 from .app_dashboard_functions import (discrete_background_color_bins,
                                       Which_Line,
                                       # Open_Or_Closed,
-                                      # Tables_Up_to_Date,
                                       Cancel_Button,
                                       # Submit_Turn,
-                                      Remove_Last_Round_New,
+                                      Remove_Last_Round,
                                       Get_Click_Data,
                                       # Score_Update_Cricket,
                                       # Score_Update_Douze,
@@ -28,7 +27,8 @@ from .app_dashboard_functions import (discrete_background_color_bins,
                                       #Update_Live_Graph,
                                       Update_Live_Player,
                                       Number_Open_Close_f,
-                                      submit_score,
+                                      Render_Score_Table,
+                                      Temp_To_Historique,
                                       Get_Stats,
                                       Save_Everyone,
                                       End_Game)
@@ -59,6 +59,7 @@ def create_ap(app, room_number):
     
     @app.callback(
         Output('tab-content', 'children'),
+
         
         Input('tabs', 'value')
 
@@ -74,68 +75,87 @@ def create_ap(app, room_number):
         game_att = load_local_dictionnary(local_path, "Cricket")
 
         init = init_db(game_att)
-        Turn_Counter, Flechette_Compteur, Score_Storage, Y_Live_Stats = init[0:4]
-        df_Score_Live_New_Way, df_Score, Stats_Table, Stats_Graph = init[4:8]
-        data_Historique, legend = init[8:10]
+        Turn_Counter, Flechette_Compteur = init[0:2]
+        data_Fleches_Temp,  Stats_Table, Stats_Graph = init[2:5]
+        Score_Table, data_Historique = init[5:7]
+        legend = init[7]
 
-        var_to_load = ["Turn_Counter", 'data_Historique',
-                        'data_Table']
+
+
+        if os.path.isfile( os.path.join(local_path,'data_Historique.npy')):
             
-        Turn, data_Historique,  data_Table = load_var(local_path, var_to_load, game_att)
+            var_to_load = ['data_Historique']
+            data_Historique = load_var(local_path, var_to_load, game_att)[0]
 
-        
+            Score_Table, data_Historique = Render_Score_Table(data_Historique,game_att['Team_List'],game_att['Cricket_Type'],Score_Table)
+            Save_Everyone(local_path, data_Historique)
+
+
+       
         if tab == 'tab-main':
 
-            return generate_tab_1(Turn_Counter,Flechette_Compteur,df_Score_Live_New_Way,df_Score, legend)
+            return generate_tab_1(Turn_Counter,Flechette_Compteur,data_Fleches_Temp, Score_Table, legend)
 
 
         elif tab == 'tab-stat':
+
+            print('i m in tab-stat')
             
             Dropdown_Value = '# Touche/ Tour'
             Stats_Table, Stats_Graph = Get_Stats(data_Historique, Stats_Table, game_att['Team_List'],Stats_Graph,Dropdown_Value)
-
-
             return generate_tab_2(Stats_Table, Stats_Graph)
             
         elif tab == 'tab-historique':           
 
             return generate_tab_3(data_Historique, game_att['Team_List'])
 
+    @app.callback(
+#        Output('Historique_Partie', 'data'),
+        Output('Modification_Historique', 'n_clicks'),
+
+        Input('Modification_Historique', 'n_clicks'),
+        State('Historique_Partie', 'data'),
+        )
+
+    def Modification_Historique(n_click_Historique, data_Historique):
+        
+        clicked_on_Modification_Historique = n_click_Historique == 1
+
+        if clicked_on_Modification_Historique:
+            print('I m in modification Historique')
+            n_click_Historique = 0
+
+            Save_Everyone(local_path, data_Historique)
+
+
+        return n_click_Historique
+
 
     @app.callback(
         Output('Graph_Live_Stat', 'figure'),  
         Output('Stat_Dropdown', 'value'),
-     
-        Input('Stat_Dropdown', 'value')
+        Output('Stat_RadioItems', 'value'),
+        Output('Stat_Table','data'),
 
+     
+        Input('Stat_Dropdown', 'value'), 
+        Input('Stat_RadioItems', 'value')
         )
 
 
-    def Update_DropdownValue(Dropdown_Value):
+    def Update_DropdownValue(Dropdown_Value,Value_RadioItem):
 
         print('Dropdown triggered this')
 
         game_att = load_local_dictionnary(local_path, "Cricket")
         var_to_load = ['data_Historique']
-        init = init_db(game_att)
-        data_Historique, legend = init[8:10]
-
-            
+        init = init_db(game_att,Value_RadioItem)
+        Stats_Table, Stats_Graph = init[3:5]       
         data_Historique = load_var(local_path, var_to_load, game_att)[0]
+  
+        Stats_Table, Stats_Graph = Get_Stats(data_Historique, Stats_Table, game_att['Team_List'],Stats_Graph,Dropdown_Value,Value_RadioItem)
 
-            
-
-
-        init = init_db(game_att)
-        Stats_Table, Stats_Graph = init[6:8]
-
-
-        
-        Stats_Table, Stats_Graph = Get_Stats(data_Historique, Stats_Table, game_att['Team_List'],Stats_Graph,Dropdown_Value)
-
-        print('Stats Graph:', Stats_Graph)
-
-        return Stats_Graph, Dropdown_Value
+        return Stats_Graph, Dropdown_Value, Value_RadioItem, Stats_Table
 
 
 
@@ -152,42 +172,45 @@ def create_ap(app, room_number):
         State('Score_Live_New_Way', 'data'),
 
     )
-    def Update_PlayerTurn_Display(Dart_Number,# Turn_Counter, 
-                                  data_Table, data_Live_New_Way, 
-                                  # Team_Number_Game, 
-                                  ##data_Historique
+    def Update_PlayerTurn_Display(Dart_Number,
+                                  Score_Table, data_Fleches_Temp
                                   ):
-                    # 'Partie_Historique.npy', 'Partie_Live.npy', 'Score.npy', 'Graph_Partie.npy', 'Stats_Partie.npy'
 
-        print('i m in ipdate playerturn display')
+        print('i m in update playerturn display')
         game_att = load_local_dictionnary(local_path, "Cricket")
-        var_to_load = ["Turn_Counter"]# , 'Partie_Historique', 'Stats_Partie']
-        Turn_Counter = load_var(local_path, var_to_load, game_att)[0]
-        Turn_Counter_Index = Turn_Counter % game_att['n_t']
-        
-        Player_Line_Dart_Column = Which_Line(Turn_Counter_Index,
-                                             data_Live_New_Way,
+        var_to_load = ['data_Historique']
+        data_Historique = load_var(local_path, var_to_load, game_att)[0]
+        N_Team = game_att['n_t']
+
+        if len(data_Historique) != 0 : 
+            N_Turn =  data_Historique[-1]['Tour'] + 1
+            Steps = int( len( data_Historique) / game_att['Darts_Total'] )
+        else:
+            N_Turn = 0
+            Steps = 0
+
+        Team_Turn_index = Steps % N_Team
+              
+        Player_Line_Dart_Column = Which_Line(Team_Turn_index,
+                                             data_Fleches_Temp,
                                              Dart_Number)
 
-##        Player_Separation = Storage_Player_Separation(Turn_Counter)
+##        Player_Separation = Storage_Player_Separation(Turn_Counter)    
 
-        (styles, _) = discrete_background_color_bins(pd.DataFrame(data_Table), 4, game_att['Game'][:-2])
+        (styles, _) = discrete_background_color_bins(pd.DataFrame(Score_Table), 4, game_att['Game'][:-2])
         # Shouldn't it be data_Table instead of df_Score?
 
-        Number_Open_Close = Number_Open_Close_f("Cricket", game_att['n_t'], data_Table,
-                                                Turn_Counter_Index, Turn_Counter)
-
-                  
-        
+        Number_Open_Close = Number_Open_Close_f("Cricket", game_att['n_t'], Score_Table,
+                                                Team_Turn_index, Steps)
+                          
         return Number_Open_Close, styles, Player_Line_Dart_Column
-        ##, Player_Separation
+
 
 
     ### Callback called upon whenever you click on the dart board, on a button (cancel, submit, previous)
     ### , or when the list of players is changed. It then updates the score accordingly.
 
     @app.callback(
-
         Output('Joueur','children'),
 
         Output('Refresh','n_clicks'),
@@ -195,15 +218,12 @@ def create_ap(app, room_number):
         Output('submit_round','n_clicks'),
         Output('precedent_round', 'n_clicks'),
 
-
         Output('basic-interactions', 'clickData'),
         Output('Dart_Counter','data'),
-
 
         Output('Score_Live_New_Way', 'data'),
         Output('Score_Table', 'data'),
     
-
 
         Input('Refresh','n_clicks'),
         Input('cancel_round','n_clicks'),
@@ -214,24 +234,32 @@ def create_ap(app, room_number):
 
         State('Dart_Counter','data'),
         State('Score_Live_New_Way', 'data'),
-        State('Score_Table', 'data'),
-
- 
-
-
-
+      
 
         )
     def Tab_Game_Callback(n_clicks_Refresh, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, clickData,
-                            Dart_Number, data_Live_New_Way, data_Table):
+                            Dart_Number, data_Fleches_Temp):
 
 
         game_att = load_local_dictionnary(local_path, "Cricket")
+        var_to_load = ['data_Historique']
+        data_Historique = load_var(local_path, var_to_load, game_att)[0]
 
-        var_to_load = ["Turn_Counter", 'data_Historique',
-                        'data_Table']
+        if len(data_Historique) != 0 : 
+            Steps = int( len( data_Historique) / game_att['Darts_Total']  ) 
+        else:
+            Steps = 0
 
-        Turn, data_Historique, data_Table = load_var(local_path, var_to_load, game_att)
+
+        init = init_db(game_att)
+        import copy
+        Score_Table = copy.deepcopy(init[5])
+        Score_Table, data_Historique = Render_Score_Table(data_Historique,game_att['Team_List'],game_att['Cricket_Type'],Score_Table)
+
+        N_Team = game_att['n_t']
+
+        Team_Turn_index = Steps % N_Team
+        Next_Team_index = (Steps + 1) % N_Team
 
 
         # which click
@@ -241,28 +269,18 @@ def create_ap(app, room_number):
         clicked_on_submit = n_clicks_Submit == 1
         clicked_on_precedent = n_clicks_precedent == 1
 
-        if check_if_init(data_Live_New_Way, game_att):
-            data_Live_New_Way = init_df_live(game_att).to_dict('records')
+        if check_if_init(data_Fleches_Temp, game_att):
+            data_Fleches_Temp = init_df_live(game_att)
 
 
-        if clicked_on_refresh: # You clicked the refresh button
-            n_clicks_Refresh = 0
-            print('The refresh button has been pushed whuile having dynamic tabs')
-
-            Turn, data_Historique,  data_Table= load_var(local_path, var_to_load, game_att)
-
-
-        Team_Number_Game = game_att['n_t']
-
-        Turn_Number = int(Turn / Team_Number_Game) + 1
-        Team_Turn = Turn % Team_Number_Game
-        Next_Player = (Turn + 1) % Team_Number_Game
-
-        
         if (clicked_on_dartboard or # Something got clicked
             clicked_on_canceled or 
             clicked_on_submit or 
-            clicked_on_precedent):
+            clicked_on_precedent or
+            clicked_on_refresh):
+
+            
+
 
 
 
@@ -274,18 +292,18 @@ def create_ap(app, room_number):
                 print('I can click on dart board')
 
 
-                clickData, Dart_Number, data_Live_New_Way = Get_Click_Data(clickData,
+                clickData, Dart_Number, data_Fleches_Temp = Get_Click_Data(clickData,
                                                                            df_darts,
                                                                            Dart_Number,
-                                                                           data_Live_New_Way,
-                                                                           Team_Turn,
+                                                                           data_Fleches_Temp,
+                                                                           Team_Turn_index,
                                                                            game_att["Darts_Total"])
             
             
             if clicked_on_refresh: # You clicked the refresh button
                 n_clicks_Refresh = 0
-                print('The refresh button has been pushed whuile having dynamic tabs')
-                Turn, data_Historique, data_Table = load_var(local_path, var_to_load, game_att)
+                print('The refresh button has been pushed whuile having dynamic tabs ')
+                data_Historique = load_var(local_path, var_to_load, game_att)[0]
 
 
             elif (not clicked_on_dartboard and
@@ -294,28 +312,26 @@ def create_ap(app, room_number):
                 not clicked_on_precedent):                 # the cancel button has been pressed
 
                 print('I can click on cancel button')
-                Dart_Number = 0 # reinitializing n_clicks and the dart number
+                Dart_Number = 0 
                 n_clicks_Cancel = 0
 
-                data_Live_New_Way = Cancel_Button(data_Live_New_Way, Team_Turn)
+                data_Fleches_Temp = Cancel_Button(data_Fleches_Temp, Team_Turn_index)
+
 
             elif (not clicked_on_dartboard and
                   not clicked_on_canceled and 
                   clicked_on_submit and 
                   not clicked_on_precedent):                 # The submit button has been pressed
+                
                 print('I can click on submit button')
 
-                data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game, game_att['Team_List'])
+                data_Fleches_Temp = Update_Live_Player(data_Fleches_Temp,Steps, N_Team, game_att['Team_List'])
                 
-                Dart_Number = 0 # reinitialize the dart number
-                n_clicks_Submit = 0 # reinitializing n_clicks
+                Dart_Number = 0 
+                n_clicks_Submit = 0 
 
-                outputs = submit_score("Cricket", game_att['Cricket_Type'], data_Live_New_Way, Team_Turn, 
-                                    Next_Player, Dart_Number, Turn, Team_Number_Game, data_Table, 
-                                    game_att['Darts_Total'], data_Historique, Column_Storage, 
-                                    game_att['Team_List'], local_path)
-                                
-                data_Live_New_Way, Turn, data_Historique, data_Table = outputs
+                data_Fleches_Temp,data_Historique, Steps = Temp_To_Historique(data_Fleches_Temp,data_Historique,Column_Storage,game_att['Darts_Total'],game_att['Team_List'],Steps,local_path,Team_Turn_index, Next_Team_index, Dart_Number)
+
             
             
             elif (not clicked_on_dartboard and
@@ -324,25 +340,25 @@ def create_ap(app, room_number):
                   clicked_on_precedent): # The come back a player button has been pressed 
                 print('I can click on precedent button')
                 n_clicks_precedent = 0
-                if Turn: # if it is pressed right at the beginning
-                    Player_Precedent = (Turn - 1) % Team_Number_Game
-                    Turn = Turn - 1 # think about this, maybe not true?
-                    data_Live_New_Way = Update_Live_Player(data_Live_New_Way,Turn, Team_Number_Game, game_att['Team_List'])
-                    outputs = Remove_Last_Round_New(Team_Number_Game, data_Table, 
-                                                    game_att['Darts_Total'], Player_Precedent,
-                                                    game_att['Game'], Turn, data_Historique)
-                    data_Table, data_Historique = outputs
+                if Steps: # if it is pressed right at the beginning
+                    Steps = Steps - 1 # think about this, maybe not true?
+                    data_Fleches_Temp = Update_Live_Player(data_Fleches_Temp,Steps, N_Team, game_att['Team_List'])
+                    data_Historique = Remove_Last_Round(data_Historique,game_att['Darts_Total'])
+            
 
-            Save_Everyone(local_path, Turn, 
-                          data_Historique, data_Table)
+            Score_Table = init[5]
+            Score_Table, data_Historique = Render_Score_Table(data_Historique,game_att['Team_List'],game_att['Cricket_Type'],Score_Table )      
+           
+            
+            Save_Everyone(local_path, data_Historique)
 
 
-        Affichage = ['Tour numéro: {}'.format(Turn_Number) ] 
+        Affichage = ['Tour numéro: {}'.format(int(Steps/N_Team)+ 1) ] 
 
         return (Affichage,
         n_clicks_Refresh, n_clicks_Cancel, n_clicks_Submit, n_clicks_precedent, 
         clickData, Dart_Number,
-         data_Live_New_Way, data_Table)
+         data_Fleches_Temp, Score_Table)
 
 
 

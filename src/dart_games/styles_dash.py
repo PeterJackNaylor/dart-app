@@ -63,11 +63,11 @@ color_mapping = {'Blue'      : 'rgb(31,120,180)',
 
 def style_data_cond_historic(Team_List):
 
-    style_data_cond= [{ 'if': {'filter_query': '{{Player}} = {} && {{Flèche numéro}} = 1'.format(team_color) },
+    style_data_cond= [{ 'if': {'filter_query': '{{Equipe}} = {} && {{Flèche numéro}} = 1'.format(team_color) },
                     'backgroundColor': color_mapping[team_color],
                     'color': 'white'} for team_color in list(Team_List.keys())]
 
-    style_data_cond += [{ 'if': {'filter_query': '{{Player}} = {} && {{Flèche numéro}} != 1'.format(team_color) },
+    style_data_cond += [{ 'if': {'filter_query': '{{Equipe}} = {} && {{Flèche numéro}} != 1'.format(team_color) },
                     'backgroundColor': color_mapping[team_color + 'Light'],
                     'color': 'white'} for team_color in list(Team_List.keys())]
 

@@ -9,9 +9,10 @@ def init_global():
     gb["live_games"] = []
     rooms = [f"{i}" for i in range(0, MAX_ROOMS)]
 
-    gb["teams"] = ["Blue", "Pink", "Red", "Green", "White", "Brown", "The red devils"]
-    gb["games"] = ["Cricket", "Template", "Bruno"]
-    gb["available_rooms"] = {el: rooms.copy() for el in gb["games"]}
+    gb['teams'] = ["Blue", "Pink", "Red", "Green",
+                   "White", "Brown", "The red devils"]
+    gb["games"] = ["Cricket", "Template"]
+    gb['available_rooms'] = {el: rooms.copy() for el in gb["games"]}
 
     for game in gb["games"]:
         check_or_create(f"ressources/local_games/{game}")

@@ -18,11 +18,9 @@ def generate_games(app):
     # All game should be defined with an if statement
     for game in gb["games"]:
         if game == "Cricket":
-            from ..dart_games.bruno_table import create_ap
+            from ..dart_games.app_dashboard_Game import create_ap
         elif game == "Template":
             from ..dart_games.app_template import create_ap
-        elif game == "Bruno":
-            from ..dart_games.app_dashboard_Game_PJ import create_ap
 
         for i in range(gb["MAX_ROOMS"]):
             app, layout = create_ap(app, i)

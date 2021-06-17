@@ -12,7 +12,7 @@ def init_global():
 
     gb['teams'] = ["Blue", "Pink", "Red", "Green",
                    "White", "Brown", "The red devils"]
-    gb["games"] = ["Cricket", "Template", "Bruno"]
+    gb["games"] = ["Cricket", "Template"]
     gb['available_rooms'] = {el: rooms.copy() for el in gb["games"]}
 
     for game in gb["games"]:

@@ -596,20 +596,19 @@ def Get_Stats(
 
         if Value_RadioItem == "Stat_Equipe":
             N_Joueur = len(list(Team_List.keys()))
+            print('Stat equipe')
         else:
             Player_List = [el for sublist in list(Team_List.values()) for el in sublist]
             N_Joueur = len(Player_List)
 
         X = [[j + 1 for j in range(0, N_Tours)]] * N_Joueur
-        Y = [[0] * N_Tours] * N_Joueur
-        N_Touche = [[0] * N_Tours] * N_Joueur
-        N_Degats = [[0] * N_Tours] * N_Joueur
+        Y = np.array([[0] * N_Tours] * N_Joueur)
+        N_Touche = np.array([[0] * N_Tours] * N_Joueur)
+        N_Degats = np.array([[0] * N_Tours] * N_Joueur)
 
-        Hover_Data = [[0] * N_Tours] * N_Joueur
+        Hover_Data = [ [0  for j in range (0, N_Tours )] for i in range (0,N_Joueur) ]
 
-        for i in range(
-            0, len(data_Historique) // 3
-        ):  # Analysing the 3 darts of the turn in one go
+        for i in range(0, len(data_Historique) // 3 ):  # Analysing the 3 darts of the turn in one go
             if Value_RadioItem == "Stat_Equipe":
 
                 Player_Turn = list(Team_List.keys()).index(
@@ -627,6 +626,7 @@ def Get_Stats(
             f1 = data_Historique[3 * i + 0]
             f2 = data_Historique[3 * i + 1]
             f3 = data_Historique[3 * i + 2]
+            
 
             hover_text = f"Fleche 1: {f1['Valeur']:02} Coef: {f1['Coef']} <br>Fleche 2: {f2['Valeur']:02} Coef: {f2['Coef']}<br>Fleche 3: {f3['Valeur']:02} Coef: {f3['Coef']}"
             Hover_Data[Player_Turn][data_Historique[3 * i]["Tour"] - 1] = hover_text
@@ -642,11 +642,12 @@ def Get_Stats(
 
             else:
 
+                N_Touche_Ferme = 0
+                N_Touche_Degats = 0
                 for f in [f1, f2, f3]:
 
-                    if (f["Coef"] == 3) and (
-                        f["Degats"] != 0 or f["Ferme le chiffre"] != 0
-                    ):
+                    if (f["Coef"] == 3) and \
+                       (f["Degats"] != 0 or f["Ferme le chiffre"] != 0) :
                         # la flechette est un triple et il a compté (meme partiellement)
                         Stats_Table[Player_Turn]["# de triple"] += 1
 
@@ -659,14 +660,17 @@ def Get_Stats(
                         Stats_Table[Player_Turn]["# de double"] += 1
 
                     if f["Valeur"] != 0:
+                        #N_Touche_Precedent = N_Touche[Player_Turn][f["Tour"] - 1]
+                        N_Touche_Ferme += f["Ferme le chiffre"]
+                        N_Touche_Degats += np.max(f["Degats"]) / f["Valeur"]
+#                        N_Touche[Player_Turn][f["Tour"] - 1] += (N_Touche_Ferme + N_Touche_Degats)
+                        #N_Degats[Player_Turn, f["Tour"] - 1] += f["Degats"]
 
-                        N_Touche_Precedent = N_Touche[Player_Turn][f["Tour"] - 1]
-                        N_Touche_Ferme = f["Ferme le chiffre"]
-                        N_Touche_Degats = np.max(f["Degats"]) / f["Valeur"]
-                        N_Touche[Player_Turn][f["Tour"] - 1] = (
-                            N_Touche_Precedent + N_Touche_Ferme + N_Touche_Degats
-                        )
-                        N_Degats[Player_Turn][f["Tour"] - 1] = np.sum(f["Degats"])
+                
+                N_Touche[Player_Turn, f1["Tour"] - 1] = N_Touche_Ferme + N_Touche_Degats
+                
+
+                
 
             N_Touche_Tot = np.sum(
                 N_Touche[Player_Turn]
@@ -679,14 +683,10 @@ def Get_Stats(
             Stats_Table[Player_Turn]["# Touche/ Tour"] = N_Touche_Tot / Tour_Reel
             Stats_Table[Player_Turn]["# Degats/ Tour"] = N_Degats_Tot / Tour_Reel
 
-            #    print('N Touche Precedent:', N_Touche_Precedent)
-            #    print('N Touche Ferme:', N_Touche_Ferme)
-            #    print('N Touche Degats:', N_Touche_Degats)
-            #    print('N Touche Tot:', N_Touche_Tot)
+      
 
-            Y[Player_Turn][data_Historique[3 * i]["Tour"] - 1] = Stats_Table[
-                Player_Turn
-            ][Dropdown_Value]
+            Y[Player_Turn,f1["Tour"] - 1] = Stats_Table[Player_Turn][Dropdown_Value]
+            
 
         Stats_Graph["layout"]["yaxis"]["title"]["text"] = Dropdown_Value
 
@@ -739,10 +739,8 @@ def Render_Score_Table(data_Historique, Team_List, Cricket_Type, Score_Table):
         Fleche = data_Historique[j]["Valeur"]
         Team_Turn = list(Team_List.keys()).index(data_Historique[j]["Equipe"])
         data_Historique[j]["Ferme le chiffre"] = 0
-        print(data_Historique)
-        data_Historique[j]["Degats"] = [
-            0 for i in range(len(data_Historique[j]["Degats"]))
-        ]
+        data_Historique[j]["Degats"] = [0 for i in range(len(data_Historique[j]["Degats"]))]
+
         if Fleche >= 15:
             value = Fleche
             coef = data_Historique[j]["Coef"]

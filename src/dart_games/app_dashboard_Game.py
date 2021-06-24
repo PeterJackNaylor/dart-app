@@ -62,9 +62,9 @@ def create_ap(app, room_number):
 
         init = init_db(game_att)
         Turn_Counter, Flechette_Compteur = init[0:2]
-        data_Fleches_Temp, Stats_Table, Stats_Graph = init[2:5]
-        Score_Table, data_Historique = init[5:7]
-        legend = init[7]
+        data_Fleches_Temp, Stats_Table, Stats_Graph, Stats_Histo = init[2:6]
+        Score_Table, data_Historique = init[6:8]
+        legend = init[8]
 
         if os.path.isfile(os.path.join(local_path, "data_Historique.npy")):
 
@@ -88,14 +88,15 @@ def create_ap(app, room_number):
         elif tab == "tab-stat":
 
             Dropdown_Value = "# Touche/ Tour"
-            Stats_Table, Stats_Graph = Get_Stats(
+            Stats_Table, Stats_Graph, Stats_Histo = Get_Stats(
                 data_Historique,
                 Stats_Table,
                 game_att["Team_List"],
                 Stats_Graph,
                 Dropdown_Value,
+                Stats_Histo
             )
-            return generate_tab_2(Stats_Table, Stats_Graph)
+            return generate_tab_2(Stats_Table, Stats_Graph, Stats_Histo)
 
         elif tab == "tab-historique":
 
@@ -130,14 +131,15 @@ def create_ap(app, room_number):
 
         game_att = load_local_dictionnary(local_path, "Cricket")
         init = init_db(game_att, Value_RadioItem)
-        Stats_Table, Stats_Graph = init[3:5]
+        Stats_Table, Stats_Graph, Stats_Histo = init[3:6]
         data_Historique = load_var(local_path)
-        Stats_Table, Stats_Graph = Get_Stats(
+        Stats_Table, Stats_Graph, Stats_Histo = Get_Stats(
             data_Historique,
             Stats_Table,
             game_att["Team_List"],
             Stats_Graph,
             Dropdown_Value,
+            Stats_Histo,
             Value_RadioItem,
         )
 

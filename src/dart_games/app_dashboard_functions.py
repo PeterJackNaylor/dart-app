@@ -586,6 +586,7 @@ def Get_Stats(
     Team_List,
     Stats_Graph,
     Dropdown_Value,
+    Stats_Histo,
     Value_RadioItem="Stat_Equipe",
 ):
 
@@ -613,6 +614,7 @@ def Get_Stats(
         N_Degats = np.zeros((N_Joueur,N_Tours), dtype=float)
 
         Hover_Data = [ [0  for j in range (0, N_Tours )] for i in range (0,N_Joueur)]
+        Game = list(Stats_Histo[0].keys())
 
         for i in range(0, len(data_Historique) // 3 ):  # Analysing the 3 darts of the turn in one go
             
@@ -664,11 +666,15 @@ def Get_Stats(
                         Stats_Table[Player_Turn]["# de double"] += 1
 
                     if f["Valeur"] != 0:
+                        
                         #N_Touche_Precedent = N_Touche[Player_Turn][f["Tour"] - 1]
                         N_Touche_Ferme += f["Ferme le chiffre"]
                         N_Touche_Degats += np.max(f["Degats"]) / f["Valeur"]
 #                        N_Touche[Player_Turn][f["Tour"] - 1] += (N_Touche_Ferme + N_Touche_Degats)
                         N_Degats[Player_Turn, f["Tour"] - 1] += np.sum(f["Degats"])
+
+                        if str(f["Valeur"]) in Game:
+                            Stats_Histo[Player_Turn][str(f["Valeur"])] += 1
 
                 
                 N_Touche[Player_Turn, f1["Tour"] - 1] = N_Touche_Ferme + N_Touche_Degats
@@ -693,8 +699,8 @@ def Get_Stats(
             
 
         Stats_Graph["layout"]["yaxis"]["title"]["text"] = Dropdown_Value
-        print('N_Toutche',N_Touche)
-        print('Y:', Y)
+        print('Histo',Stats_Histo)
+        
 
         for i in range(0, N_Joueur):
 
@@ -711,7 +717,7 @@ def Get_Stats(
             )
             Stats_Graph.data[i].update(hovertemplate=Hover_Data[i])
 
-    return Stats_Table, Stats_Graph
+    return Stats_Table, Stats_Graph, Stats_Histo
 
 
 def Update_Live_Player(data_Fleches_Temp, Turn, Team_Number_Game, Team_List):

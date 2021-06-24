@@ -65,6 +65,12 @@ def init_db(att, Value_RadioItem="Stat_Equipe"):
         stat_init = np.zeros((n_t, len(Column_Live_Stats)), dtype=int)
         df_Stat_Live = pd.DataFrame(stat_init, columns=Column_Live_Stats)
         df_Stat_Live["index"] = list(Team_List.keys())
+
+        Histo_init = np.zeros( (n_t, len(Game)), dtype=int)
+        df_Histo = pd.DataFrame(Histo_init, columns=Game)
+        df_Histo["index"] = list(Team_List.keys())
+
+
     else:
         Player_List = [
             element for sublist in list(Team_List.values()) for element in sublist
@@ -74,6 +80,7 @@ def init_db(att, Value_RadioItem="Stat_Equipe"):
         df_Stat_Live["index"] = Player_List
 
     Stats_Table = df_Stat_Live.to_dict("records")
+    Stats_Histo = df_Histo.to_dict("records")
 
     data_Historique = pd.DataFrame(columns=Column_Storage).to_dict("records")
 
@@ -132,6 +139,7 @@ def init_db(att, Value_RadioItem="Stat_Equipe"):
         data_Fleches_Temp,
         Stats_Table,
         Stats_Graph,
+        Stats_Histo,
         Score_Table,
         data_Historique,
         legend,

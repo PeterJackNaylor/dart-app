@@ -114,7 +114,7 @@ def generate_tab_1(
     return children
 
 
-def generate_tab_2(Stats_Table, Stats_Graph):
+def generate_tab_2(Stats_Table, Stats_Graph,Stats_Histo):
 
     children = []
 
@@ -158,19 +158,18 @@ def generate_tab_2(Stats_Table, Stats_Graph):
     children += [dcc.Graph(id="Graph_Live_Stat", animate=True, figure=Stats_Graph)]
 
     children += [html.Button("Mise à jour Graphiques", id="Button_Graph", n_clicks=0)]
+    
+    X_Bar_Graph= list(Stats_Histo[0].keys())
+
+    N_Joueur = len(Stats_Histo)
 
     children += [
         dcc.Graph(
             figure={
                 "data": [
-                    {"x": [1, 2, 3], "y": [2, 4, 3], "type": "bar", "name": "SF"},
-                    {
-                        "x": [1, 2, 3],
-                        "y": [5, 4, 3],
-                        "type": "bar",
-                        "name": u"Montréal",
-                    },
-                ]
+                    {"x": X_Bar_Graph,  "y": list(Stats_Histo[i].values()), "type": "bar", "name": i ,'marker':{ "color" :Stats_Histo[i]['index']}}        for i in range(0,N_Joueur)]
+
+                
             }
         )
     ]

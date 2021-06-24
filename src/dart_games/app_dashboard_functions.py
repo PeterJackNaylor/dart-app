@@ -602,31 +602,35 @@ def Get_Stats(
             N_Joueur = len(Player_List)
 
         X = [[j + 1 for j in range(0, N_Tours)]] * N_Joueur
-        Y = np.array([[0] * N_Tours] * N_Joueur)
-        N_Touche = np.array([[0] * N_Tours] * N_Joueur)
-        N_Degats = np.array([[0] * N_Tours] * N_Joueur)
+#        Y = np.array([[0.] * N_Tours] * N_Joueur)
+        Y = np.empty((N_Joueur,N_Tours), dtype=float)
+        Y[:] = np.NaN
 
-        Hover_Data = [ [0  for j in range (0, N_Tours )] for i in range (0,N_Joueur) ]
+#        N_Touche = np.array([[0] * N_Tours] * N_Joueur)
+        N_Touche = np.zeros((N_Joueur,N_Tours), dtype=float)
+
+#        N_Degats = np.array([[0.] * N_Tours] * N_Joueur)
+        N_Degats = np.zeros((N_Joueur,N_Tours), dtype=float)
+
+        Hover_Data = [ [0  for j in range (0, N_Tours )] for i in range (0,N_Joueur)]
 
         for i in range(0, len(data_Historique) // 3 ):  # Analysing the 3 darts of the turn in one go
-            if Value_RadioItem == "Stat_Equipe":
-
-                Player_Turn = list(Team_List.keys()).index(
-                    data_Historique[3 * i]["Equipe"]
-                )
-                Tour_Reel = data_Historique[3 * i]["Tour"]
-
-            else:
-
-                Player_Turn = Player_List.index(data_Historique[3 * i]["Joueur"])
-                Tour_Reel = data_Historique[3 * i]["Tour"] / len(
-                    Team_List[data_Historique[3 * i]["Equipe"]]
-                )
-
+            
             f1 = data_Historique[3 * i + 0]
             f2 = data_Historique[3 * i + 1]
             f3 = data_Historique[3 * i + 2]
-            
+                        
+            if Value_RadioItem == "Stat_Equipe":
+
+                Player_Turn = list(Team_List.keys()).index(f1["Equipe"])
+                Tour_Reel = f1["Tour"]
+
+            else:
+
+                Player_Turn = Player_List.index(f1["Joueur"])
+                #Tour_Reel = f1["Tour"] / len(Team_List[f1["Equipe"]])
+                Tour_Reel = int( (f1["Tour"] -1 ) / len(Team_List[f1["Equipe"]]) ) +1
+                print('Tour reel:',Tour_Reel)
 
             hover_text = f"Fleche 1: {f1['Valeur']:02} Coef: {f1['Coef']} <br>Fleche 2: {f2['Valeur']:02} Coef: {f2['Coef']}<br>Fleche 3: {f3['Valeur']:02} Coef: {f3['Coef']}"
             Hover_Data[Player_Turn][data_Historique[3 * i]["Tour"] - 1] = hover_text
@@ -664,7 +668,7 @@ def Get_Stats(
                         N_Touche_Ferme += f["Ferme le chiffre"]
                         N_Touche_Degats += np.max(f["Degats"]) / f["Valeur"]
 #                        N_Touche[Player_Turn][f["Tour"] - 1] += (N_Touche_Ferme + N_Touche_Degats)
-                        #N_Degats[Player_Turn, f["Tour"] - 1] += f["Degats"]
+                        N_Degats[Player_Turn, f["Tour"] - 1] += np.sum(f["Degats"])
 
                 
                 N_Touche[Player_Turn, f1["Tour"] - 1] = N_Touche_Ferme + N_Touche_Degats
@@ -689,6 +693,8 @@ def Get_Stats(
             
 
         Stats_Graph["layout"]["yaxis"]["title"]["text"] = Dropdown_Value
+        print('N_Toutche',N_Touche)
+        print('Y:', Y)
 
         for i in range(0, N_Joueur):
 

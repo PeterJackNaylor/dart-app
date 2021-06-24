@@ -103,7 +103,6 @@ def create_ap(app, room_number):
 
     @app.callback(
         Output("Modification_Historique", "n_clicks"),
-        # Output("Historique_Partie", "data"),
         Input("Modification_Historique", "n_clicks"),
         State("Historique_Partie", "data"),
     )
@@ -117,7 +116,7 @@ def create_ap(app, room_number):
 
             Save(local_path, "data_Historique.npy", data_Historique)
 
-        return n_click_Historique, data_Historique
+        return n_click_Historique
 
     @app.callback(
         Output("Graph_Live_Stat", "figure"),

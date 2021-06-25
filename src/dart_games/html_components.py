@@ -23,9 +23,12 @@ from .styles_dash import (
     tab_selected_style,
     style_data_conditional,
     style_data_cond_historic,
+    color_mapping
 )
 
 from .app_dashboard_functions import Save
+
+
 
 
 def generate_tab_1(
@@ -160,14 +163,36 @@ def generate_tab_2(Stats_Table, Stats_Graph,Stats_Histo):
     children += [html.Button("Mise à jour Graphiques", id="Button_Graph", n_clicks=0)]
     
     X_Bar_Graph= list(Stats_Histo[0].keys())
+    X_Bar_Graph= X_Bar_Graph[:-3]
+    #X_Bar_Graph[-1] = '25'
 
     N_Joueur = len(Stats_Histo)
-
+    print("#############################")
+    print("#############################")
+    print(X_Bar_Graph)
+    print( list(Stats_Histo[0].values())[:-3])
+    print("#############################")
+    print("#############################")
     children += [
         dcc.Graph(
-            figure={
+            figure={ 
                 "data": [
-                    {"x": X_Bar_Graph,  "y": list(Stats_Histo[i].values()), "type": "bar", "name": i ,'marker':{ "color" :Stats_Histo[i]['index']}}        for i in range(0,N_Joueur)]
+                    { 
+                   # "x": X_Bar_Graph,
+                    "y": list(Stats_Histo[i].values())[:-3], "type": "bar", "name": i ,
+                    "text": X_Bar_Graph,
+                    "xaxes" : {'type' :'category'},
+
+                    'marker':{ "color" : color_mapping[Stats_Histo[i]['index']] }}   
+                         for i in range(0,N_Joueur)],
+                "layout" : [
+                    {
+
+#                     "xaxis" : {"tickmode" : 'array', "tickvals" : [0, 1, 2, 3, 4, 5, 6], "ticktext": X_Bar_Graph }
+                    }
+                ]
+
+#                fig.update_xaxes(type='category')
 
                 
             }

@@ -674,7 +674,7 @@ def Get_Stats(
                         N_Degats[Player_Turn, f["Tour"] - 1] += np.sum(f["Degats"])
 
                         if str(f["Valeur"]) in Game:
-                            Stats_Histo[Player_Turn][str(f["Valeur"])] += 1
+                            Stats_Histo[Player_Turn][str(f["Valeur"])] += f["Coef"]
 
                 
                 N_Touche[Player_Turn, f1["Tour"] - 1] = N_Touche_Ferme + N_Touche_Degats

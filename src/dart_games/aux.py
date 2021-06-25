@@ -79,6 +79,10 @@ def init_db(att, Value_RadioItem="Stat_Equipe"):
         df_Stat_Live = pd.DataFrame(stat_init, columns=Column_Live_Stats)
         df_Stat_Live["index"] = Player_List
 
+        Histo_init = np.zeros( (len(Player_List), len(Game)), dtype=int)
+        df_Histo = pd.DataFrame(Histo_init, columns=Game)
+        df_Histo["index"] = Player_List
+
     Stats_Table = df_Stat_Live.to_dict("records")
     Stats_Histo = df_Histo.to_dict("records")
 
